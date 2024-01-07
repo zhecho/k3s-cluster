@@ -1,0 +1,52 @@
+---
+- name: Extend Filesystem on NVMe Drive with gdisk
+  hosts: all
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: Check filesystem integrity
+      ansible.builtin.command:
+        cmd: e2fsck -fp /dev/nvme0n1p2
+      register: fs_check
+      ignore_errors: yes
+
+    - name: Display e2fsck output
+      ansible.builtin.debug:
+        msg: "{{ fs_check.stdout_lines }}"
+
+    - name: Unmount filesystem (if necessary)
+      ansible.builtin.mount:
+        path: /mount/point
+        src: /dev/nvme0n1p2
+        fstype: auto
+        state: unmounted
+
+    - name: Delete existing partition (DANGEROUS)
+      expect:
+        command: gdisk /dev/nvme0n1
+        responses:
+          (?i)Command.*: 'd'
+          (?i)Partition number.*: '2'
+          (?i)Command.*: 'w'
+          (?i)Do you want to proceed.*: 'Y'
+      ignore_errors: yes
+
+    - name: Recreate partition using the full disk (DANGEROUS)
+      expect:
+        command: gdisk /dev/nvme0n1
+        responses:
+          (?i)Command.*: 'n'
+          (?i)Partition number.*: '2'
+          (?i)First sector.*: '\n'
+          (?i)Last sector.*: '\n'
+          (?i)Current type.*: '\n'
+          (?i)Command.*: 'w'
+          (?i)Do you want to proceed.*: 'Y'
+      ignore_errors: yes
+
+    - name: Resize filesystem on /dev/nvme0n1p2
+      ansible.builtin.command:
+        cmd: resize2fs /dev/nvme0n1p2
+      when: fs_check.rc == 0
+
