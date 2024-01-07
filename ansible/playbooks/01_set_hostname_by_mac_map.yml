@@ -1,0 +1,31 @@
+---
+- name: Rename Hosts Based on MAC Addresses and Update /etc/hosts
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  vars:
+    mac_to_hostname:
+      'c0:74:2b:ff:12:f2': 'k3s-master-01'
+      'c0:74:2b:ff:0e:65': 'k3s-worker-01'
+      'c0:74:2b:ff:12:da': 'k3s-worker-02'
+
+  tasks:
+    - name: Set hostname based on MAC address
+      hostname:
+        name: "{{ mac_to_hostname[ansible_default_ipv4.macaddress] }}"
+      when: ansible_default_ipv4.macaddress in mac_to_hostname
+
+    - name: Get current IP address
+      shell: hostname -I | cut -d' ' -f1
+      register: current_ip
+      when: ansible_default_ipv4.macaddress in mac_to_hostname
+
+    - name: Update /etc/hosts with new hostname
+      lineinfile:
+        path: /etc/hosts
+        regexp: '127\.0\.1\.1\s+.*'
+        line: "127.0.1.1 {{ mac_to_hostname[ansible_default_ipv4.macaddress] }}"
+        state: present
+      when: ansible_default_ipv4.macaddress in mac_to_hostname
+

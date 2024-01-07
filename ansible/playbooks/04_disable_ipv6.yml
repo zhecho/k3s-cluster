@@ -1,0 +1,15 @@
+---
+- name: Configure Network Settings and Disable IPv6
+  hosts: all
+  become: yes
+  tasks:
+    - name: Disable IPv6 in sysctl
+      lineinfile:
+        path: /etc/sysctl.conf
+        line: 'net.ipv6.conf.all.disable_ipv6 = 1'
+        create: yes
+      notify: Reload sysctl
+
+  handlers:
+    - name: Reload sysctl
+      command: sysctl -p

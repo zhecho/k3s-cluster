@@ -1,0 +1,29 @@
+---
+- name: Setup SSH Key-Based Authentication for a Specific User
+  hosts: all
+  become: yes
+
+  vars:
+    ssh_user: zen0
+    ssh_public_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAD9QDE+ZfidwAHtT3NB/lLHsfh7KwiQhTXcFa1lpNvqU+0Nj5PUAK12CCnztG94om802rxpY7vA4a67qlqoDQuS81atsZQ4AcMCs5uwUiMBezdIfM997/Ad3kXL4vnsZ8FqXB3syHxh8YO6lGR6RXdm16DOqocLV2BI/gXhVFLryyqPXVelmqKR9I+UrAST/t+pPUB1CIGpHP8flj9sls2Z0/VNnjob3dHTWua78iTCzUBUmjOLIWUiFYoxcWDK8XRmkkDfVQ6oD/DVWIkg8CDgzwH9adwZOuzAFOiSPbu2hG6/ujBeml43sV13DUOYu+UIK69QRSk0/rezB+7/KFD/fvBS7wcUOWwifpYs91IWscCxEB0bK+PLprpNRgVVkVoiNE6FPaaOlXyHar5otMluixgSeAQsaIF+5EvMIMp4nSqy7BNJCYpwGFtJd0GwJ8TK93aqxflVFd8D0Nhz5nSI6om9XBnYniCN6E7LXXpjG1kVUnGgs8LjzBVy8KgX5GTRYOJeZalbFznLnaql+itrP/l2ijkt/zD45VEIMUy/nIqm0I/yufDdSwhuMHB2cfaoE84d4spD0Oqe8TLPr6/MUggDIVFnwxXwWl0/tlrr+d6mcSIXehLQm4oB9CCxozDv7oDcFmiUkb6hTExyKhZdAJiAPXKGvt1mKeQQshSJ8N8F0OQKimDGVeRurAgTanYPfKuJDw2wCkUQZMzkyfpz7BlNFZz5lVjhLEJjnAMKUbmAo7EY6oq0wETru3TVWyIjmtibm3SR0UzJoERKpHKgxWvyZCvYc045BhXgGWZdIwfgggzcSg5e2UFj5s+PIPXccr9T8+kEXGZaewOTZUAdJfIKDtnmQWk6YMFNpT0AOC5K7dTk6j1nFxqfWS3YooHICVGj3A3bgqFUNPN+uLapAScxk4StANWd4QTo69bX1sfG2A7BXLHg4PjSzlLOy3RR8aPU3gYk+lgHxVJuNIpPaG5UrEGRvgKC+HjYhS2QVhYFivlZscagHRVusn3sPYM8t/sGYsZWgE+urOtq6ZR33on/wADl5mqSJv1EOvSu+I5NVW2uFbc8JatsTx+OP+VLhgzeAax2FlJzekoxGBs0CiTRc9NuBnnGhzxLepOoQuAiolDrVYNDEyt8nozTwwuuMrnTgb6ujO9bDCvwXenPCc3ule3iaQiXvl7SUAfT6mXAJcUTTztG59InLy4J/s/ozYTA56wwRHrcGKYnGw7WM+zNNcd2xENwRwK28OPE7hWBBeO7to65rvf2yKCewEAoUZXef7kFfzgtbvUiSq5VMv/yLoXR5mx8oenKIpywp6u1wH5IHa5tPH9ktDCxINxlTmmo7FH zen0@127.lan - id_rsa"
+  tasks:
+    - name: Ensure the SSH user exists
+      user:
+        name: "{{ ssh_user }}"
+        state: present
+        create_home: yes
+
+    - name: Ensure .ssh directory exists
+      file:
+        path: "/home/{{ ssh_user }}/.ssh"
+        state: directory
+        owner: "{{ ssh_user }}"
+        group: "{{ ssh_user }}"
+        mode: '0700'
+
+    - name: Set up authorized keys for the SSH user
+      authorized_key:
+        user: "{{ ssh_user }}"
+        state: present
+        key: "{{ ssh_public_key }}"
+

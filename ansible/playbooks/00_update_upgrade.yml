@@ -1,0 +1,22 @@
+---
+- name: Common Setup for k3s Cluster
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install necessary packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - tmux
+          - vim
+        state: present
+
