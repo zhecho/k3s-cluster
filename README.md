@@ -64,8 +64,6 @@ change that in fstab with above one.
 
 
 
-
-
 ## Running Ansible Playbooks
 ### Download armbian and check sha (localhost is osx TODO: for other osses) 
 ```ansible
@@ -75,15 +73,5 @@ ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/001_download_v
 ### Write image to sdcard
 This to be achiavable you need to set IMAGE_PATH and DISK_DEVICE.
 WARNING: Make sure that disk is not wrong one!!
-```ansible 
-ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/002_dd_image_to_local_sd.yml -e "IMAGE_PATH=$PWD/Armbian_23.11.1_Orangepi5-plus_bookworm_edge_6.7.0-rc1_minimal.img.xz DISK_DEVICE=/dev/disk2" --ask-become-pass
-```
-### Initial Config --> 
-Armbian
 
 
-```ansible-playbook
-## Rebooting only k3s-worker-01 node
-ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/10_reboot.yml --private-key=~/.ssh/id_rsa -K --limit="k3s-worker-01"
-
-```
