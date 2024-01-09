@@ -14,7 +14,7 @@ sudo dd if=Armbian_23.11.1_Orangepi5-plus_bookworm_edge_6.7.0-rc1_minimal.img of
 ```
 
 ### Insert and Boot with SD card
-![First login](./images/01_fist_login_script.png)
+![First login](./images/01_fist_login_script2.png)
 ### List devices lsblk
 ![Check devices ](./images/02_check_devices.png)
 ```bash
