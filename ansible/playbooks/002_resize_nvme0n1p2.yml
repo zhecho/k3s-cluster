@@ -5,6 +5,19 @@
   gather_facts: no
 
   tasks:
+    - name: Create a RAM disk for temporary Ansible files
+      ansible.builtin.command:
+        cmd: mkdir -p /mnt/ramdisk && mount -t tmpfs -o size=512m tmpfs /mnt/ramdisk
+      become: yes
+
+    - name: Unmount filesystem (if necessary)
+      ansible.builtin.mount:
+        path: /mount/point
+        src: /dev/nvme0n1p2
+        fstype: auto
+        state: unmounted
+      become: yes
+
     - name: Check filesystem integrity
       ansible.builtin.command:
         cmd: e2fsck -fp /dev/nvme0n1p2
@@ -14,13 +27,6 @@
     - name: Display e2fsck output
       ansible.builtin.debug:
         msg: "{{ fs_check.stdout_lines }}"
-
-    - name: Unmount filesystem (if necessary)
-      ansible.builtin.mount:
-        path: /mount/point
-        src: /dev/nvme0n1p2
-        fstype: auto
-        state: unmounted
 
     - name: Delete existing partition (DANGEROUS)
       expect:
@@ -50,3 +56,7 @@
         cmd: resize2fs /dev/nvme0n1p2
       when: fs_check.rc == 0
 
+    - name: Cleanup the RAM disk
+      ansible.builtin.command:
+        cmd: umount /mnt/ramdisk && rm -rf /mnt/ramdisk
+      become: yes
