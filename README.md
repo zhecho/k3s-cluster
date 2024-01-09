@@ -27,15 +27,10 @@ sudo su -
 # NOTE: option bs=1M is different from osX one (bs=1m) if you use it. 
 dd if=/dev/mmcblk1 of=/dev/nvme0n1 bs=1M status=progress
 ```
+![dd and resize](./images/03_dd_and_resizefs.png)
 ### Edit partition 2 (nvme0n1p2 ) on nvme device in order to extend it 
-```bash
-parted /dev/nvme0n1 
-list partitions - type: "p"
-resizepart - type: "resizepart" "number_of_partition"
-set how mutch - type: 100%
-```
-
 ### Check and resize fs 
+![check and resize fs](./images/04_resizefs.png)
 ```bash
 e2fsck -f /dev/nvme0n1p2
 resize2fs /dev/nvme0n1p2
@@ -45,7 +40,7 @@ resize2fs /dev/nvme0n1p2
 blkid
 ```
 ### Check out that UUIDs of sdcard and nvme are the same.
-
+![list and generate uuid ](./images/05_generate_new_uuid_for_sdp1.png.png)
 ### Change UUID 
 ```bash
 tune2fs -O metadata_csum_seed -U random /dev/mmcblk1p2
@@ -56,10 +51,10 @@ e2label /dev/nvme0n1p1 bootfs
 After reboot you will have /boot mounted from sdcard and / mounted as /dev/nvme0n1p1
 
 ### Edit /etc/fstab in /dev/nvme0n1p1 (i.e. "/")
-blkid and get UUID for /dev/nvme0n1p1
-change that in fstab with above one.
+![change etc fstab](./images/06_change_etc_fsta_uuid.png)
 
-### Reboot 
+### Check and Reboot 
+![check and reboot](./images/07_check_fstabs_and_reboot.png)
 
 
 
