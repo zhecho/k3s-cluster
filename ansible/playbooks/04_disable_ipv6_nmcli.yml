@@ -12,4 +12,5 @@
     - name: Disable IPv6 for each connection
       command: nmcli con mod "{{ item.split(':')[0] }}" ipv6.method ignore
       loop: "{{ nmcli_con_show.stdout_lines }}"
+      when: "'loopback' not in item"
 

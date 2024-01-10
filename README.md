@@ -53,14 +53,131 @@ After changing UUIDs you must chage it in /etc/fstab accordingly.
 ### Check and Reboot 
 ![check and reboot](./images/07_check_fstabs_and_reboot.png)
 
+
+# Configure DHCP for static records or just leave it dynamic
+After installing all devices Put it in the netwrok to get IP via DHCP (you can do it with static records in it) and get ./ansible/inventory/hosts.ini update with the correct IPs. 
+
 # Running Ansible Playbooks
+### Copy ssh key 
+That step supposes that you have already generated ssh key (~/.ssh/id_rsa*). I'll execute this one only for one of the devices (--limit=<ip_address>)
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/00_copy_ssh_pub_key.yml \
+     -k \
+     --limit="192.168.1.2"
+```
+If you saw an error about sshpass just install it like that
+```bash
+brew install hudochenkov/sshpass/sshpass
+```
+### Setup hostnames
+Edit playbook mac addresses in order to specify hostnme for each device
+
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/00_set_hostname_by_mac_map.yml \
+     --private-key=~/.ssh/id_rsa \
+     -K \
+     --limit="192.168.1.2"
+```
+### Update/upgrade
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/01_update_upgrade.yml \
+     --private-key=~/.ssh/id_rsa \
+     -K \
+     --limit="k3s-master-01"
+```
+
+### Config SSH server and IPv6 ;))
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/02_sshd_config_hardened.yml \
+     --private-key=~/.ssh/id_rsa \
+     -K \
+     --limit="k3s-master-01"
+```
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/03_disable_ipv6.yml \
+     --private-key=~/.ssh/id_rsa \
+     -K \
+     --limit="k3s-master-01"
+```
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/04_disable_ipv6_nmcli.yml \
+     --private-key=~/.ssh/id_rsa \
+     -K \
+     --limit="k3s-master-01"
+```
+### Print Load and reboot
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/05_load_status.yml \
+     --private-key=~/.ssh/id_rsa \
+     -K \
+     --limit="k3s-master-01"
+```
+```ansible
+ansible-playbook -i ansible/inventory/hosts.ini \
+    ./ansible/playbooks/06_reboot.yml \
+     --private-key=~/.ssh/id_rsa \
+     -K \
+     --limit="k3s-master-01"
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## TODOs
 ### Download armbian and check sha (localhost is osx TODO: for other osses) 
 ```ansible
-ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/001_download_verify_image.yml
+# Executed in the local macOS to download and check image
+ansible-playbook ansible/playbooks/001_download_verify_image.yml
 ```
 
 ### Write image to sdcard
 This to be achiavable you need to set IMAGE_PATH and DISK_DEVICE.
 WARNING: Make sure that disk is not wrong one!!
+```ansible
+# Executed in the local macOS for prepairng SD card 
+ansible-playbook ./ansible/playbooks/002_dd_image_to_local_sd.yml
+```
 
 
