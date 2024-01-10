@@ -57,7 +57,7 @@ After changing UUIDs you must chage it in /etc/fstab accordingly.
 # Configure DHCP for static records or just leave it dynamic
 After installing all devices Put it in the netwrok to get IP via DHCP (you can do it with static records in it) and get ./ansible/inventory/hosts.ini update with the correct IPs. 
 
-# Running Ansible Playbooks
+# Running Ansible Playbooks for basic cobnfig
 ### Copy ssh key 
 That step supposes that you have already generated ssh key (~/.ssh/id_rsa*). I'll execute this one only for one of the devices (--limit=<ip_address>)
 ```ansible
@@ -126,50 +126,11 @@ ansible-playbook -i ansible/inventory/hosts.ini \
      -K \
      --limit="k3s-master-01"
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## TODOs
 ### Download armbian and check sha (localhost is osx TODO: for other osses) 
 ```ansible
 # Executed in the local macOS to download and check image
-ansible-playbook ansible/playbooks/001_download_verify_image.yml
+ansible-playbook ./ansible/playbooks/TODO_001_download_verify_image.yml
 ```
 
 ### Write image to sdcard
@@ -177,7 +138,13 @@ This to be achiavable you need to set IMAGE_PATH and DISK_DEVICE.
 WARNING: Make sure that disk is not wrong one!!
 ```ansible
 # Executed in the local macOS for prepairng SD card 
-ansible-playbook ./ansible/playbooks/002_dd_image_to_local_sd.yml
+ansible-playbook ./ansible/playbooks/TODO_002_resize_nvme0n1p2.yml
 ```
+# Ansible Playbooks for installing Cilium
+## TODO
 
+# Ansible Playbooks for installing k3s
+## TODO
 
+# Ansible Playbooks for installing k8s
+## TODO

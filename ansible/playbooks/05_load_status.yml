@@ -7,13 +7,12 @@
   tasks:
     - name: Get system load and uptime
       shell: |
-        echo $(uptime | awk -F'load average:' '{ print $2 }' | cut -d, -f1 | tr -d ' ')%\
-        $(uptime -p | sed 's/up //')
-      register: load_uptime
+        echo "$(uptime)"
+      register: system_info
 
     - name: Get memory usage
       shell: |
-        echo $(free -h | awk '/^Mem:/ {print $3 "/" $2}')
+        free -h | awk '/^Mem:/ {print $3 "/" $2}'
       register: memory_usage
 
     - name: Get IP address
@@ -23,7 +22,7 @@
 
     - name: Get CPU temperature
       shell: |
-        echo $(cat /sys/class/thermal/thermal_zone0/temp | awk '{print $1/1000}')°C
+        cat /sys/class/thermal/thermal_zone0/temp | awk '{print $1/1000 "°C"}'
       register: cpu_temp
 
     - name: Get disk usage of root
@@ -34,11 +33,9 @@
     - name: Display system information
       debug:
         msg: |
-          System load:   {{ load_uptime.stdout.split()[0] }}\
-          Up time:       {{ load_uptime.stdout.split()[1] }} {{ load_uptime.stdout.split()[2] }}
-          Memory usage:  {{ memory_usage.stdout }}\
+          System load and uptime: {{ system_info.stdout }}
+          Memory usage:  {{ memory_usage.stdout }}
           IP:            {{ ip_address.stdout }}
-          CPU temp:      {{ cpu_temp.stdout }}\
+          CPU temp:      {{ cpu_temp.stdout }}
           Usage of /:    {{ disk_usage.stdout }}
-
 
