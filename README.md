@@ -46,16 +46,12 @@ blkid
 tune2fs -O metadata_csum_seed -U random /dev/mmcblk1p2
 e2label /dev/nvme0n1p1 bootfs
 ```
-
-### Reboot 
-After reboot you will have /boot mounted from sdcard and / mounted as /dev/nvme0n1p1
-
+After changing UUIDs you must chage it in /etc/fstab accordingly. 
 ### Edit /etc/fstab in /dev/nvme0n1p1 (i.e. "/")
 ![change etc fstab](./images/06_change_etc_fsta_uuid.png)
 
 ### Check and Reboot 
 ![check and reboot](./images/07_check_fstabs_and_reboot.png)
-
 
 # Running Ansible Playbooks
 ### Download armbian and check sha (localhost is osx TODO: for other osses) 
