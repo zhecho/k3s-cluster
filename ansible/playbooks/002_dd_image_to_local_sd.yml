@@ -1,5 +1,5 @@
 ---
-- name: Write Armbian Image to Disk
+- name: Write Armbian Image to SD card
   hosts: localhost
   gather_facts: no
   vars:
@@ -35,9 +35,9 @@
       when: compressed_image_file.stat.exists and disk_device_exists.stat.exists
       become: yes
 
-    - name: Write decompressed image to disk with dd
+    - name: Write decompressed image to disk with dd on macOS ( bs=1m not as linux one 1M)
       ansible.builtin.command:
-        cmd: "dd if={{ decompressed_image_path }} of={{ disk_device }} bs=1m status=progress"
+        cmd: "dd if={{ decompressed_image_path }} of={{ disk_device }} bs=1M status=progress"
         timeout: 600
       register: dd_output
       become: yes

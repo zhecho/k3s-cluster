@@ -16,31 +16,31 @@ sudo dd if=Armbian_23.11.1_Orangepi5-plus_bookworm_edge_6.7.0-rc1_minimal.img of
 ### Insert and Boot with SD card
 ![First login](./images/01_fist_login_script2.png)
 ### List devices lsblk
-![Check devices ](./images/02_check_devices.png)
 ```bash
 lsblk
 ```
-### DD from sd to nvme. WARNING: Ensure device name!!!
+![Check devices ](./images/02_check_devices.png)
+
+### On the device OrangePI 5 Plus DD from sd to nvme; Extend partition 2 (nvme0n1p2)
 ```bash
+# WARNING: Ensure device name!!!
 # root
 sudo su -
 # NOTE: option bs=1M is different from osX one (bs=1m) if you use it. 
 dd if=/dev/mmcblk1 of=/dev/nvme0n1 bs=1M status=progress
 ```
 ![dd and resize](./images/03_dd_and_resizefs.png)
-### Edit partition 2 (nvme0n1p2 ) on nvme device in order to extend it 
 ### Check and resize fs 
 ![check and resize fs](./images/04_resizefs.png)
 ```bash
 e2fsck -f /dev/nvme0n1p2
 resize2fs /dev/nvme0n1p2
 ```
-### List UUIDs
+### Check out that UUIDs of sdcard and nvme are the same.
 ```bash
 blkid
 ```
-### Check out that UUIDs of sdcard and nvme are the same.
-![list and generate uuid ](./images/05_generate_new_uuid_for_sdp1.png.png)
+![list and generate uuid ](./images/05_generate_new_uuid_for_sdp1.png)
 ### Change UUID 
 ```bash
 tune2fs -O metadata_csum_seed -U random /dev/mmcblk1p2
@@ -57,9 +57,7 @@ After reboot you will have /boot mounted from sdcard and / mounted as /dev/nvme0
 ![check and reboot](./images/07_check_fstabs_and_reboot.png)
 
 
-
-
-## Running Ansible Playbooks
+# Running Ansible Playbooks
 ### Download armbian and check sha (localhost is osx TODO: for other osses) 
 ```ansible
 ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/001_download_verify_image.yml
