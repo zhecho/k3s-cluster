@@ -1,0 +1,8 @@
+---
+# tasks file for roles/k3s-master-install
+- name: Install K3s on Master Node
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="{{ INSTALL_K3S_EXEC }}" sh -
+  args:
+    executable: /bin/bash
+  when: inventory_hostname in groups['k3s-master']

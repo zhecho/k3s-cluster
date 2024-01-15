@@ -1,0 +1,12 @@
+---
+- name: Add remote host keys to known_hosts
+  ansible.builtin.shell:
+    cmd: "ssh-keyscan -H {{ hostvars[inventory_hostname]['ansible_host'] }} >> ~/.ssh/known_hosts"
+  delegate_to: localhost
+  run_once: true
+- name: Copy SSH public key to remote hosts
+  ansible.builtin.shell:
+    cmd: "sshpass -p '{{ ssh_password }}' ssh-copy-id -i $HOME/.ssh/id_rsa.pub {{ local_user }}@{{ hostvars[inventory_hostname]['ansible_host'] }}"
+  delegate_to: localhost
+    #run_once: true
+

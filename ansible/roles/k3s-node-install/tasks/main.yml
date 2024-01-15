@@ -1,0 +1,9 @@
+---
+# tasks file for roles/k3s-node-install
+- name: Install K3s on Worker Nodes
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="{{ INSTALL_K3S_EXEC }}" K3S_URL="https://{{ hostvars[groups['k3s-master'][0]]['ansible_host'] }}:6443" K3S_TOKEN="$(sudo cat /var/lib/rancher/k3s/server/node-token)" sh -
+  args:
+    executable: /bin/bash
+  when: inventory_hostname in groups['k3s-workers']
+

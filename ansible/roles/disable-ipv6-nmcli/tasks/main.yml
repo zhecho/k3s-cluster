@@ -1,0 +1,11 @@
+---
+- name: Get list of network connections
+  command: nmcli -t -f UUID,TYPE,DEVICE con show
+  register: nmcli_con_show
+  changed_when: false
+
+- name: Disable IPv6 for each connection
+  command: nmcli con mod "{{ item.split(':')[0] }}" ipv6.method ignore
+  loop: "{{ nmcli_con_show.stdout_lines }}"
+  when: "'loopback' not in item"
+

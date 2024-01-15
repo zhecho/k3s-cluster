@@ -1,0 +1,49 @@
+---
+# tasks file for roles/k3s-kubeconfig-setup
+- name: Check if local Kubeconfig exists
+  stat:
+    path: "~/.kube/config"
+  register: kubeconfig
+  delegate_to: localhost
+  run_once: true
+
+- name: Fetch Kubeconfig from Master Node
+  fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "/tmp/k3s.yaml"
+    flat: yes
+  when: inventory_hostname in groups['k3s-master']
+  run_once: true
+
+- name: Replace 'localhost' with master node IP in Kubeconfig
+  lineinfile:
+    path: "/tmp/k3s.yaml"
+    regexp: '    server: https://localhost:6443'
+    line: '    server: https://{{ hostvars[groups['k3s-master'][0]]['ansible_host'] }}:6443'
+  delegate_to: localhost
+  run_once: true
+
+- name: Create .kube directory if it does not exist
+  file:
+    path: "~/.kube"
+    state: directory
+    mode: 0755
+  delegate_to: localhost
+  run_once: true
+  when: not kubeconfig.stat.exists
+
+- name: Backup existing Kubeconfig if it exists
+  command: cp ~/.kube/config ~/.kube/config.backup
+  delegate_to: localhost
+  run_once: true
+  when: kubeconfig.stat.exists
+
+- name: Merge K3s Kubeconfig with local Kubeconfig
+  community.kubernetes.kubeconfig:
+    src: "/tmp/k3s.yaml"
+    dest: "~/.kube/config"
+    merge_type: merge
+  delegate_to: localhost
+  run_once: true
+
+

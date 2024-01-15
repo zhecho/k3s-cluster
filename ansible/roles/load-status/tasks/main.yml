@@ -1,0 +1,35 @@
+---
+- name: Get system load and uptime
+  shell: |
+    echo "$(uptime)"
+  register: system_info
+
+- name: Get memory usage
+  shell: |
+    free -h | awk '/^Mem:/ {print $3 "/" $2}'
+  register: memory_usage
+
+- name: Get IP address
+  shell: |
+    hostname -I | cut -d ' ' -f1
+  register: ip_address
+
+- name: Get CPU temperature
+  shell: |
+    cat /sys/class/thermal/thermal_zone0/temp | awk '{print $1/1000 "°C"}'
+  register: cpu_temp
+
+- name: Get disk usage of root
+  shell: |
+    df -h / | awk 'NR==2{print $3 "/" $5}'
+  register: disk_usage
+
+- name: Display system information
+  debug:
+    msg: |
+      System load and uptime: {{ system_info.stdout }}
+      Memory usage:  {{ memory_usage.stdout }}
+      IP:            {{ ip_address.stdout }}
+      CPU temp:      {{ cpu_temp.stdout }}
+      Usage of /:    {{ disk_usage.stdout }}
+

@@ -1,0 +1,4 @@
+---
+# defaults file for roles/k3s-master-install
+INSTALL_K3S_EXEC: "--flannel-backend=none --disable-network-policy --disable-kube-proxy --disable=traefik --cluster-cidr={{ cluster_cidr }} --service-cidr={{ service_cidr }} --node-external-ip={{ public_ip }} --node-ip={{ private_ip }}"
+

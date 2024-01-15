@@ -1,0 +1,3 @@
+---
+# defaults file for roles/k3s-node-install
+INSTALL_K3S_EXEC: "--flannel-backend=none --disable-network-policy --disable-kube-proxy --disable=traefik --node-ip={{ private_ip }}"

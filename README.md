@@ -1,9 +1,12 @@
 # **Create k3s cluster on OrangePi 5 plus devices with ansible** 
 
 Alpha version of Readme.md expains semi-automatic installation of k3s cluster.
-Semi-automatic because ther is no playbooks for download, check image hash
-and dd it to the device. It contains only  macOS part of the guide.
-BSD/UNIX/Linux part is very similar and will be updated in the future.
+Semi-automatic because there are no playbooks for download, check image hash
+and dd it to the device. Those actions are described in "Manual actions".
+Readme contains some explanations and ansible cli commands that does initial
+config and automated k3s config with ansible. Docuememnt suppose that current
+management OS is macOS (i.e. ansible is installed on macOS). BSD/UNIX/Linux
+part is similar and documenatation will be updated in the future.
 
 ## Manual actions
 ## Copy to sdcard (WARNING: doublecheck disk device name !!! )
@@ -60,9 +63,37 @@ After changing UUIDs you must chage it in /etc/fstab accordingly.
 
 
 # Configure DHCP for static records or just leave it dynamic
-After installing all devices Put it in the netwrok to get IP via DHCP (you can do it with static records in it) and get ./ansible/inventory/hosts.ini update with the correct IPs. 
+After installing all devices Put it in the netwrok to get IP via DHCP (you can
+do it with static records in it) and get ./ansible/inventory/hosts.ini update
+with the correct IPs.   
 
 # Running Ansible Playbooks for basic cobnfig
+### Installing ansible requirements
+```ansible
+ansible-galaxy collection install -r collections/requirements.yml
+```
+
+### Copy pub keys
+Role "copy-ssh-pub-key" is not working as expected!!! it's commented out (you can use Copy ssh key from old playbooks blueprint)
+
+```ansible
+# Adding keys to cluster (expect to have key in ~/.ssh/id_rsa.pub)
+# NOTE: will ask you for user password two times (TODO: fix this)
+ansible-playbook -i inventory/hosts.ini k3s-ssh-copy-id.yml -e local_user=$USER -k
+
+# NOTE: For removing use (suppose that pub keys are ~/.ssh/*.pub )
+ansible-playbook -i inventory/hosts.ini k3s-ssh-remove-ssh-pub.yml -k
+```
+### Bootstrap
+```ansible
+ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K --private-key=~/.ssh/id_rsa
+```
+### Install k3s 
+```ansible
+ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa -vvvv
+```
+
+## Old playbooks
 ### Copy ssh key 
 That step supposes that you have already generated ssh key (~/.ssh/id_rsa*). I'll execute this one only for one of the devices (--limit=<ip_address>)
 ```ansible
@@ -131,6 +162,7 @@ ansible-playbook -i ansible/inventory/hosts.ini \
      -K \
      --limit="k3s-master-01"
 ```
+
 ## TODOs
 Place for future roadmap ideas/
 
@@ -147,11 +179,3 @@ WARNING: Make sure that disk is not wrong one!!
 # Executed in the local macOS for prepairng SD card 
 ansible-playbook ./ansible/playbooks/TODO_002_resize_nvme0n1p2.yml
 ```
-# Ansible Playbooks for installing Cilium
-## TODO
-
-# Ansible Playbooks for installing k3s
-## TODO
-
-# Ansible Playbooks for installing k8s
-## TODO
