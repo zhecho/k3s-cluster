@@ -1,16 +1,16 @@
 # **Create k3s cluster on OrangePi 5 plus devices with ansible** 
 
-# Manual stuff (TODO: do it with playbooks.. someday)
-It's supposed that you have SD card inserted as well as mounted nvme ssd disks mounted in the back of OrangePi 5 plus
-The whole idea is to prepare and boot from SD card and move Armbian to the /dev/nvme0n1 sdd. 
-
+## Manual actions
 ## Copy to sdcard (WARNING: doublecheck disk device name !!! )
+
 ```bash
 # on osX check out the disk name with diskutil list command 
-# on linux/bsd/unix you can use lsblk or parted or gsdisk or other like cdisk fdisk etc.
+# on linux/bsd/unix you can use lsblk or parted or gsdisk or other like cdisk
+# fdisk etc.
 
 # create bootable sd card
-sudo dd if=Armbian_23.11.1_Orangepi5-plus_bookworm_edge_6.7.0-rc1_minimal.img of=/dev/disk2 bs=1m status=progress
+sudo dd if=Armbian_23.11.1_Orangepi5-plus_bookworm_edge_6.7.0-rc1_minimal.img \
+    of=/dev/disk2 bs=1m status=progress
 ```
 
 ### Insert and Boot with SD card
@@ -127,6 +127,8 @@ ansible-playbook -i ansible/inventory/hosts.ini \
      --limit="k3s-master-01"
 ```
 ## TODOs
+Place for future roadmap ideas/
+
 ### Download armbian and check sha (localhost is osx TODO: for other osses) 
 ```ansible
 # Executed in the local macOS to download and check image

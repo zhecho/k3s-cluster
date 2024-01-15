@@ -36,7 +36,7 @@
 
     - name: Compare SHA checksums and exit if match
       ansible.builtin.debug:
-        msg: "SHA checksum verification passed, exiting"
+        msg: "SHA checksum verification passed, exiting TODO: verify GPG signature"
       when: image_file.stat.exists and sha_file.stat.exists and calculated_checksum.stdout.split()[0] == sha_file_checksum.stdout
       register: checksum_match
       changed_when: false
