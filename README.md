@@ -1,5 +1,10 @@
 # **Create k3s cluster on OrangePi 5 plus devices with ansible** 
 
+Alpha version of Readme.md expains semi-automatic installation of k3s cluster.
+Semi-automatic because ther is no playbooks for download, check image hash
+and dd it to the device. It contains only  macOS part of the guide.
+BSD/UNIX/Linux part is very similar and will be updated in the future.
+
 ## Manual actions
 ## Copy to sdcard (WARNING: doublecheck disk device name !!! )
 
@@ -66,7 +71,7 @@ ansible-playbook -i ansible/inventory/hosts.ini \
      -k \
      --limit="192.168.1.2"
 ```
-If you saw an error about sshpass just install it like that
+If you notice an error about sshpass just install it:
 ```bash
 brew install hudochenkov/sshpass/sshpass
 ```
