@@ -12,14 +12,14 @@
     src: /etc/rancher/k3s/k3s.yaml
     dest: "/tmp/k3s.yaml"
     flat: yes
-  when: inventory_hostname in groups['k3s-master']
+  when: inventory_hostname in groups['k3sMaster']
   run_once: true
 
 - name: Replace 'localhost' with master node IP in Kubeconfig
   lineinfile:
     path: "/tmp/k3s.yaml"
     regexp: '    server: https://localhost:6443'
-    line: '    server: https://{{ hostvars[groups['k3s-master'][0]]['ansible_host'] }}:6443'
+    line: '    server: https://{{ hostvars[groups['k3sMaster'][0]]['ansible_host'] }}:6443'
   delegate_to: localhost
   run_once: true
 

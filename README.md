@@ -86,7 +86,7 @@ ansible-playbook -i inventory/hosts.ini k3s-ssh-remove-ssh-pub.yml -k
 ```
 ### Bootstrap
 ```ansible
-ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K --private-key=~/.ssh/id_rsa
+ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K
 ```
 ### Install k3s 
 ```ansible

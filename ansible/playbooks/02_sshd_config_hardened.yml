@@ -1,6 +1,6 @@
 ---
 - name: Configure SSH for Key-Based Authentication
-  hosts: all
+  hosts: k3sCluster
   become: yes
 
   tasks:

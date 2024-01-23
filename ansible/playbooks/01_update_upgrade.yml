@@ -1,6 +1,6 @@
 ---
 - name: Common Setup for k3s Cluster
-  hosts: all
+  hosts: k3sCluster
   become: yes
 
   tasks:

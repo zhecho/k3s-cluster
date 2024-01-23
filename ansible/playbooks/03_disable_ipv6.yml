@@ -1,6 +1,6 @@
 ---
 - name: Configure Network Settings and Disable IPv6
-  hosts: all
+  hosts: k3sCluster
   become: yes
   tasks:
     - name: Disable IPv6 in sysctl

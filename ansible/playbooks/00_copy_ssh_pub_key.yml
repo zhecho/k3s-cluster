@@ -1,6 +1,6 @@
 ---
 - name: Install local SSH Public Key to Remote Hosts
-  hosts: all
+  hosts: k3sCluster
   gather_facts: yes
 
   vars:

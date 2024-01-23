@@ -1,6 +1,6 @@
 ---
 - name: Disable IPv6 on Network Interfaces
-  hosts: all
+  hosts: k3sCluster
   become: yes
 
   tasks:

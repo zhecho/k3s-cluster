@@ -1,6 +1,6 @@
 ---
 - name: Gather System Information
-  hosts: all
+  hosts: k3sCluster
   become: yes
   gather_facts: no
 

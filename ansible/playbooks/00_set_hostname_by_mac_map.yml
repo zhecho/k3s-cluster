@@ -1,6 +1,6 @@
 ---
 - name: Rename Hosts Based on MAC Addresses and Update /etc/hosts
-  hosts: all
+  hosts: k3sCluster
   become: yes
   gather_facts: yes
 

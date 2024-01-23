@@ -1,6 +1,6 @@
 ---
 - name: Restart Servers
-  hosts: all
+  hosts: k3sCluster
   become: yes
 
   tasks:

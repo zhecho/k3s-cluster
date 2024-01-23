@@ -1,6 +1,6 @@
 ---
 - name: Install pip3 and pexpect, and Fix GPT on NVMe Drives
-  hosts: all
+  hosts: k3sCluster
   become: yes
   gather_facts: no
 

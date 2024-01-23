@@ -1,6 +1,6 @@
 ---
 - name: Extend Filesystem on NVMe Drive with gdisk
-  hosts: all
+  hosts: k3sCluster
   become: yes
   gather_facts: no
 

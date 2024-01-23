@@ -5,4 +5,4 @@
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="{{ INSTALL_K3S_EXEC }}" sh -
   args:
     executable: /bin/bash
-  when: inventory_hostname in groups['k3s-master']
+  when: inventory_hostname in groups['k3sMaster']
