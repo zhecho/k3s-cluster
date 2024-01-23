@@ -6,9 +6,9 @@
 
   vars:
     mac_to_hostname:
-      'c0:74:2b:ff:12:f2': 'k3s-master-01'
-      'c0:74:2b:ff:0e:65': 'k3s-worker-01'
-      'c0:74:2b:ff:12:da': 'k3s-worker-02'
+      'c0:74:2b:ff:12:f2': '01.master.k3s'
+      'c0:74:2b:ff:0e:65': '01.worker.k3s'
+      'c0:74:2b:ff:12:da': '02.worker.k3s'
 
   tasks:
     - name: Set hostname based on MAC address
