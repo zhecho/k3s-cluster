@@ -1,6 +1,6 @@
 ---
 mac_to_hostname:
-  'c0:74:2b:ff:00:01': '01.master.k3s'
-  'c0:74:2b:ff:00:02': '01.worker.k3s'
-  'c0:74:2b:ff:00:03': '02.worker.k3s'
+  'c0:74:2b:ff:12:f2': '01.master.k3s'
+  'c0:74:2b:ff:e0:65': '01.worker.k3s'
+  'c0:74:2b:ff:12:da': '02.worker.k3s'
 

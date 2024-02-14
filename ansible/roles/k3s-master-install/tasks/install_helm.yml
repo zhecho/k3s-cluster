@@ -1,0 +1,61 @@
+- name: Get system architecture
+  ansible.builtin.command: dpkg --print-architecture
+  register: architecture
+  changed_when: false
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Add Helm repository
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/helm-stable-debian.list
+    line: "deb [arch={{ architecture.stdout }} signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+    create: yes
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Check if Helm GPG key is already added
+  ansible.builtin.stat:
+    path: /usr/share/keyrings/helm.gpg
+  register: helm_gpg
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Add Helm GPG key
+  ansible.builtin.shell: |
+    curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+  when:
+    - inventory_hostname in groups['k3sMaster']
+    - not helm_gpg.stat.exists
+
+- name: Install apt-transport-https package
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: present
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Check if Helm repository is already added
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/helm-stable-debian.list
+  register: helm_repo
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Add Helm repository
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/helm-stable-debian.list
+    line: "deb [arch={{ architecture.stdout }} signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+    create: yes
+  when:
+    - inventory_hostname in groups['k3sMaster']
+    - not helm_repo.stat.exists
+
+- name: Install Helm package
+  ansible.builtin.apt:
+    name: helm
+    update_cache: yes
+    state: present
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+

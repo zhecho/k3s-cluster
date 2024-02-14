@@ -1,9 +1,30 @@
 ---
-# tasks file for roles/k3s-node-install
-- name: Install K3s on Worker Nodes
+- name: Ensure the /etc/rancher/k3s directory exists
+  become: yes  # Use elevated permissions
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    mode: '0755'
+  when: 
+    - inventory_hostname in groups['k3sWorkers']
+
+- name: Deploy the modified k3s.yaml to all nodes
+  become: yes
+  ansible.builtin.copy:
+    dest: /etc/rancher/k3s/k3s.yaml
+    content: "{{ hostvars[groups['k3sMaster'][0]]['modified_k3s_config'] }}"
+    mode: '0644'
+  when: 
+    - inventory_hostname in groups['k3sWorkers']
+
+- name: Install k3s on worker nodes
+  become: yes
   shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="{{ INSTALL_K3S_EXEC }}" K3S_URL="https://{{ hostvars[groups['k3sMaster'][0]]['ansible_host'] }}:6443" K3S_TOKEN="$(sudo cat /var/lib/rancher/k3s/server/node-token)" sh -
+    curl -sfL https://get.k3s.io | \
+      INSTALL_K3S_EXEC="{{ INSTALL_K3S_EXEC_VARS }}" \
+      K3S_TOKEN="{{ hostvars[groups['k3sMaster'][0]]['k3s_token'] }}" sh -
   args:
     executable: /bin/bash
-  when: inventory_hostname in groups['k3sWorkers']
-
+  when: 
+    - inventory_hostname in groups['k3sWorkers']
+    - "'k3s' not in services"

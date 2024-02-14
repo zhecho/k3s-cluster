@@ -1,4 +1,16 @@
 ---
 # defaults file for roles/k3s-master-install
-INSTALL_K3S_EXEC: "--flannel-backend=none --disable-network-policy --disable-kube-proxy --disable=traefik --cluster-cidr={{ cluster_cidr }} --service-cidr={{ service_cidr }} --node-external-ip={{ public_ip }} --node-ip={{ private_ip }}"
+# cilium_version: "1.14.0"
+cilium_helm_version: '1.15.0'
+INSTALL_K3S_EXEC_VARS: >-
+  server
+  --flannel-backend=none
+  --disable-network-policy
+  --disable-kube-proxy
+  --cluster-cidr={{ cluster_cidr }}
+  --service-cidr={{ service_cidr }}
+  --node-external-ip={{ ansible_host }}
+  --node-ip={{ ansible_host }}
+  --node-name={{ inventory_hostname }}
+  --disable=traefik
 

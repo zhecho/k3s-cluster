@@ -1,8 +1,21 @@
 ---
 # tasks file for roles/k3s-master-install
-- name: Install K3s on Master Node
-  shell: |
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="{{ INSTALL_K3S_EXEC }}" sh -
-  args:
-    executable: /bin/bash
-  when: inventory_hostname in groups['k3sMaster']
+- name: Gather the service facts
+  service_facts:
+
+- name: Install K3s Master node
+  import_tasks: install_k3s_master_node.yml
+
+- name: Install k9s on master node
+  import_tasks: install_k9s.yml
+
+- name: Install Helm 
+  import_tasks: install_helm.yml
+
+- name: Install Cilium with Helm
+  import_tasks: install_cilium_with_helm.yml
+
+- name: Install cilium-cli
+  import_tasks: install_cilium_cli.yml
+
+

@@ -1,25 +1,36 @@
 ---
 # tasks file for roles/k3s-kubeconfig-setup
-- name: Check if local Kubeconfig exists
-  stat:
-    path: "~/.kube/config"
-  register: kubeconfig
-  delegate_to: localhost
+- name: Check if K3s service is running
+  ansible.builtin.command: systemctl is-active --quiet k3s
+  register: k3s_service_status
+  failed_when: k3s_service_status.rc != 0
+  changed_when: false
+  delegate_to: "{{ groups['k3sMaster'][0] }}"
   run_once: true
 
-- name: Fetch Kubeconfig from Master Node
-  fetch:
-    src: /etc/rancher/k3s/k3s.yaml
+- name: Fetch K3s kubeconfig from master node
+  ansible.builtin.fetch:
+    src: "/etc/rancher/k3s/k3s.yaml"  # Default location of kubeconfig file in K3s
     dest: "/tmp/k3s.yaml"
     flat: yes
-  when: inventory_hostname in groups['k3sMaster']
+  delegate_to: "{{ groups['k3sMaster'][0] }}"
   run_once: true
+  when: k3s_service_status.rc == 0
 
-- name: Replace 'localhost' with master node IP in Kubeconfig
+- name: Ensure .kube directory exists
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/.kube"
+    state: directory
+    mode: 0755
+  delegate_to: localhost
+  run_once: true
+  when: k3s_service_status.rc == 0
+
+- name: Replace localhost with master node IP in Kubeconfig
   lineinfile:
     path: "/tmp/k3s.yaml"
     regexp: '    server: https://localhost:6443'
-    line: '    server: https://{{ hostvars[groups['k3sMaster'][0]]['ansible_host'] }}:6443'
+    line: "    server: https://{{ hostvars[groups['k3sMaster'][0]] }}:6443"
   delegate_to: localhost
   run_once: true
 
@@ -38,12 +49,37 @@
   run_once: true
   when: kubeconfig.stat.exists
 
-- name: Merge K3s Kubeconfig with local Kubeconfig
-  community.kubernetes.kubeconfig:
-    src: "/tmp/k3s.yaml"
-    dest: "~/.kube/config"
-    merge_type: merge
+- name: Check, Merge, or Create K3s Kubeconfig with local Kubeconfig
+  ansible.builtin.shell: |
+    LOCAL_KUBECONFIG="{{ lookup('env', 'HOME') }}/.kube/config"
+    K3S_KUBECONFIG="/tmp/k3s.yaml"
+    MERGED_KUBECONFIG="/tmp/merged_kubeconfig"
+
+    # Ensure the .kube directory exists
+    mkdir -p "$(dirname "${LOCAL_KUBECONFIG}")"
+
+    # Check if local kubeconfig exists
+    if [ -f "${LOCAL_KUBECONFIG}" ]; then
+      echo "Local kubeconfig exists, proceeding with merge."
+
+      # Merge K3s kubeconfig with local kubeconfig and store it in the default location
+      KUBECONFIG="${K3S_KUBECONFIG}:${LOCAL_KUBECONFIG}" kubectl config view --raw > "${MERGED_KUBECONFIG}"
+      mv "${MERGED_KUBECONFIG}" "${LOCAL_KUBECONFIG}"
+      
+      echo "Kubeconfig successfully merged."
+      exit 0
+    else
+      echo "Local kubeconfig does not exist. Creating from K3s kubeconfig."
+
+      # Copy K3s kubeconfig to the default kubeconfig location as the initial config
+      cp "${K3S_KUBECONFIG}" "${LOCAL_KUBECONFIG}"
+      
+      echo "Kubeconfig successfully created from K3s kubeconfig."
+      exit 0
+    fi
+  register: kubeconfig_setup
   delegate_to: localhost
   run_once: true
-
+  changed_when: "'Kubeconfig successfully' in kubeconfig_setup.stdout"
+  failed_when: kubeconfig_setup.rc != 0
 

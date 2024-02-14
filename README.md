@@ -35,12 +35,22 @@ lsblk
 # root
 sudo su -
 # NOTE: option bs=1M is different from osX one (bs=1m) if you use it. 
-dd if=/dev/mmcblk1 of=/dev/nvme0n1 bs=1M status=progress
+dd if=/dev/mmcblk1 of=/dev/nvme0n1 bs=1M status=progress 
+
+# or do it via ssh with xzcat like:
+xzcat Armbian_23.11.1_Orangepi5-plus_jammy_edge_6.7.0-rc1.img.xz | ssh root@192.168.1.X 'dd of=/dev/nvme0n1 bs=1M status=progress'
+
 ```
 ![dd and resize](./images/03_dd_and_resizefs.png)
 ### Check and resize fs 
 ![check and resize fs](./images/04_resizefs.png)
 ```bash
+or 
+
+parted /dev/nvme0n1
+print
+resizepart 2 100%
+
 e2fsck -f /dev/nvme0n1p2
 resize2fs /dev/nvme0n1p2
 ```
@@ -56,7 +66,61 @@ e2label /dev/nvme0n1p1 bootfs
 ```
 After changing UUIDs you must chage it in /etc/fstab accordingly. 
 ### Edit /etc/fstab in /dev/nvme0n1p1 (i.e. "/")
+```bash
+mkdir -p /tmp/ssd
+mount /dev/nvme0n1p2 /tmp/ssd
+
+# and correct UUIDs
+vim /mnt/ssd/etc/fstab
+```
 ![change etc fstab](./images/06_change_etc_fsta_uuid.png)
+
+### TODO: recompile with va 48 bit for cilium && Disable Swap on armbian
+https://charmingwebdesign.com/raspberry-pi-kubernetes-cluster-with-cilium-cni/
+```bash
+# TODO make ansible role
+# install prerequisities 
+sudo apt-get install -y git make gcc libssl-dev bc flex bison \
+     libncurses5-dev libncursesw5-dev libelf-dev \
+     build-essential fakeroot libaudit-dev unzip
+
+# Linux sources 
+git clone --depth 1 https://github.com/armbian/build.git armbian
+cd armbian
+
+# Configure / compile armbian kernel
+./compile.sh build BOARD=orangepi5-plus BRANCH=edge BUILD_DESKTOP=no BUILD_MINIMAL=yes KERNEL_CONFIGURE=yes RELEASE=bookworm
+Set  Kernel Features → Memory model and change to 48-bit Virtual Address Space
+
+# debug 
+curl -sLO https://raw.githubusercontent.com/cilium/cilium/main/contrib/k8s/k8s-cilium-exec.sh
+chmod +x ./k8s-cilium-exec.sh
+
+# install helm on master
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+
+
+API_SERVER_IP=<YOUR API SERVER IP>
+# Kubeadm default is 6443
+API_SERVER_PORT=6443
+helm install cilium cilium/cilium –version 1.12.1 \
+–namespace kube-system \
+–set kubeProxyReplacement=strict \
+–set k8sServiceHost=${API_SERVER_IP} \
+–set k8sServicePort=${API_SERVER_PORT}
+
+
+# disable swap
+systemctl mask dev-zram1.swap
+vim /etc/default/armbian-zram-config
+# A few lines down the file, uncomment the line that says SWAP=false:
+reboot
+free -h
+```
 
 ### Check and Reboot 
 ![check and reboot](./images/07_check_fstabs_and_reboot.png)
@@ -74,7 +138,8 @@ ansible-galaxy collection install -r collections/requirements.yml
 ```
 
 ### Copy pub keys
-Role "copy-ssh-pub-key" is not working as expected!!! it's commented out (you can use Copy ssh key from old playbooks blueprint)
+Role "copy-ssh-pub-key" is not working as expected!!! it's commented out (you
+can use Copy ssh key from old playbooks blueprint)
 
 ```ansible
 # Adding keys to cluster (expect to have key in ~/.ssh/id_rsa.pub)
@@ -91,17 +156,16 @@ ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K
 ### Install k3s 
 ```ansible
 ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa -vvvv
+# ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa --limit="01.master.k3s"
 ```
 
 ## Old playbooks
 ### Copy ssh key 
 That step supposes that you have already generated ssh key (~/.ssh/id_rsa*). I'll execute this one only for one of the devices (--limit=<ip_address>)
 ```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/00_copy_ssh_pub_key.yml \
-     -k \
-     --limit="192.168.1.2"
+ansible-playbook -i inventory/hosts.ini playbooks/00_copy_ssh_pub_key.yml  -k --limit="02.worker.k3s"
 ```
+
 If you notice an error about sshpass just install it:
 ```bash
 brew install hudochenkov/sshpass/sshpass
@@ -164,7 +228,7 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 ```
 
 ## TODOs
-Place for future roadmap ideas/
+Place for roadmap ideas/
 
 ### Download armbian and check sha (localhost is osx TODO: for other osses) 
 ```ansible

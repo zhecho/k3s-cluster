@@ -1,0 +1,36 @@
+- name: Install K3s master node
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="{{ INSTALL_K3S_EXEC_VARS }}" sh -
+  args:
+    executable: /bin/bash
+  when:
+    - inventory_hostname in groups['k3sMaster']
+    - "'k3s' not in services"
+
+- name: Get k3s token from master node
+  shell: sudo cat /var/lib/rancher/k3s/server/node-token
+  register: k3s_token_result
+  when: inventory_hostname in groups['k3sMaster']
+  run_once: true  # Ensures this command only runs once
+
+- name: Set k3s token as fact
+  set_fact:
+    k3s_token: "{{ k3s_token_result.stdout }}"
+  when: inventory_hostname in groups['k3sMaster']
+
+- name: Fetch k3s.yaml from master
+  ansible.builtin.slurp:
+    src: /etc/rancher/k3s/k3s.yaml
+  register: k3s_config_content
+
+- name: Decode the k3s.yaml content
+  set_fact:
+    k3s_config_decoded: "{{ k3s_config_content['content'] | b64decode }}"
+
+- name: Replace 'localhost' with ansible_host IP in the k3s config
+  set_fact:
+    modified_k3s_config: "{{ k3s_config_decoded | regex_replace('server: https://localhost:6443', 'server: https://' + ansible_host + ':6443') }}"
+
+# - name: Debug print the modified config (optional)
+#   ansible.builtin.debug:
+#     var: modified_k3s_config

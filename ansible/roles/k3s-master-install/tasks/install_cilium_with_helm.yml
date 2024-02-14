@@ -1,0 +1,42 @@
+- name: Check if Cilium Helm repository is already added
+  ansible.builtin.shell: helm repo list | grep -q 'cilium'
+  register: cilium_repo_check
+  failed_when: cilium_repo_check.rc != 0 and cilium_repo_check.rc != 1
+  changed_when: false
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Add Cilium Helm repository
+  ansible.builtin.shell: helm repo add cilium https://helm.cilium.io/
+  when:
+    - inventory_hostname in groups['k3sMaster']
+    - cilium_repo_check.rc == 1
+
+- name: Check if Cilium is already installed
+  kubernetes.core.helm_info:
+    name: cilium
+    release_namespace: kube-system
+  register: cilium_helm_info
+  ignore_errors: no
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Install Cilium with Helm using the Helm module
+  kubernetes.core.helm:
+    name: cilium
+    chart_ref: cilium/cilium
+    chart_version: "{{ cilium_helm_version }}"
+    release_namespace: kube-system
+    values:
+      kubeProxyReplacement: true
+      k8sServiceHost: "{{ ansible_host }}"
+      k8sServicePort: "{{ api_server_port }}"
+      kubeConfigPath: "/etc/rancher/k3s/k3s.yaml"
+  environment:
+    KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+

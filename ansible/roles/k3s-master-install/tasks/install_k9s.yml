@@ -1,0 +1,49 @@
+- name: Check if K9s is installed
+  command: which k9s
+  register: k9s_installed
+  ignore_errors: true
+  changed_when: false
+
+- name: Install K9s on Armbian
+  when:
+    - k9s_installed.rc != 0
+    - inventory_hostname in groups['k3sMaster']
+  vars:
+    k9s_version: "v0.25.18"  # Replace with the desired version
+    url_arm64: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_arm64.tar.gz"
+    url_armv7: "https://github.com/derailed/k9s/releases/download/{{ k9s_version }}/k9s_Linux_arm.tar.gz"
+  block:
+    - name: Download K9s binary for arm64
+      ansible.builtin.get_url:
+        url: "{{ url_arm64 }}"
+        dest: "/tmp/k9s_Linux_arm64.tar.gz"
+        mode: '0755'
+      when: ansible_architecture == "aarch64"
+
+    - name: Download K9s binary for armv7
+      ansible.builtin.get_url:
+        url: "{{ url_armv7 }}"
+        dest: "/tmp/k9s_Linux_arm.tar.gz"
+        mode: '0755'
+      when: ansible_architecture == "armv7l"
+
+    - name: Extract K9s binary for arm64
+      ansible.builtin.unarchive:
+        src: "/tmp/k9s_Linux_arm64.tar.gz"
+        dest: "/tmp/"
+        remote_src: yes
+      when: ansible_architecture == "aarch64"
+
+    - name: Extract K9s binary for armv7
+      ansible.builtin.unarchive:
+        src: "/tmp/k9s_Linux_arm.tar.gz"
+        dest: "/tmp/"
+        remote_src: yes
+      when: ansible_architecture == "armv7l"
+
+    - name: Move K9s to /usr/local/bin
+      command: mv /tmp/k9s /usr/local/bin/k9s
+      args:
+        creates: /usr/local/bin/k9s
+
+

@@ -1,3 +1,7 @@
----
-# defaults file for roles/k3s-node-install
-INSTALL_K3S_EXEC: "--flannel-backend=none --disable-network-policy --disable-kube-proxy --disable=traefik --node-ip={{ private_ip }}"
+cilium_helm_version: '1.15.0'
+INSTALL_K3S_EXEC_VARS: >-
+ agent
+  --server=https://{{ hostvars[groups['k3sMaster'][0]]['ansible_host'] }}:6443
+  --node-external-ip={{ ansible_host }}
+  --node-ip={{ ansible_host }}
+  --node-name={{ inventory_hostname }}
