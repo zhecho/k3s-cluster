@@ -15,5 +15,4 @@
     - role: roles/update-upgrade
     - role: roles/disable-ipv6
     - role: roles/disable-ipv6-nmcli
-      #- role: roles/load-status
     - role: roles/reboot
