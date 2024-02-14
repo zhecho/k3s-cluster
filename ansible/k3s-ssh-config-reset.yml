@@ -1,0 +1,14 @@
+---
+- name: Reset ssh config to k3s cluster (Master and Nodes)
+  become: true
+  hosts: k3sCluster
+  gather_facts: yes
+
+  vars:
+    public_ip: "192.168.1.5"
+    cluster_cidr: "192.168.2.0/24"
+    service_cidr: "192.168.3.0/24"
+    private_ip: "{{ ansible_host }}"
+
+  roles:
+    - role: roles/sshd-config-reset

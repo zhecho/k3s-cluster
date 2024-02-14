@@ -1,0 +1,11 @@
+---
+- name: Copy ssh pub key to Master and Nodes
+  become: false
+  hosts: k3sCluster
+  gather_facts: yes
+  vars_prompt:
+    - name: ssh_password
+      prompt: "Enter SSH password"
+      private: yes  # This ensures the input is not displayed
+  roles:
+    - role: roles/copy-ssh-pub-key

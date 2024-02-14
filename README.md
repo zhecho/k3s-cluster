@@ -153,7 +153,19 @@ ansible-playbook -i inventory/hosts.ini k3s-ssh-remove-ssh-pub.yml -k
 ```ansible
 ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K
 ```
-### Install k3s 
+### Installation - runs the folloing tasks
+```text
+On mater node: 
+ Install K3s Master node
+ Install k9s on master node
+ Install Helm 
+ Install Cilium with Helm
+ Install cilium-cli
+On nodes:
+ Ensure the /etc/rancher/k3s directory exists
+ Deploy the modified k3s.yaml to all nodes
+ Install k3s on worker nodes
+```
 ```ansible
 ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa -vvvv
 # ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa --limit="01.master.k3s"

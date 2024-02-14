@@ -1,0 +1,19 @@
+---
+- name: Install k3s Master and Nodes
+  become: true
+  hosts: "k3sCluster"
+  gather_facts: yes
+
+  vars:
+    public_ip: "192.168.1.5"
+    cluster_cidr: "10.42.0.0/24"
+    service_cidr: "10.43.0.0/24"
+    private_ip: "{{ ansible_host }}"
+    cilium_helm_version: "1.15.0"
+
+  roles:
+    - role: k3s-master-install
+    - role: k3s-node-install
+    #- role: roles/set-hostname-by-mac-map
+      #- role: k3s-kubeconfig-setup
+

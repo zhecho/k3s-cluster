@@ -1,0 +1,7 @@
+---
+- name: Copy ssh pub key to Master and Nodes
+  become: true
+  hosts: k3sCluster
+  gather_facts: yes
+  roles:
+    - role: roles/sshd-config-hardened

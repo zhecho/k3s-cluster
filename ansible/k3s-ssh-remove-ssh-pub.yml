@@ -1,0 +1,8 @@
+---
+- name: Remove ssh pub key from Master and Nodes
+  become: false
+  hosts: k3sCluster
+  gather_facts: yes
+
+  roles:
+    - role: roles/remove-ssh-pub-key
