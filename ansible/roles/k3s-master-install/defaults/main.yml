@@ -13,4 +13,5 @@ INSTALL_K3S_EXEC_VARS: >-
   --node-ip={{ ansible_host }}
   --node-name={{ inventory_hostname }}
   --disable=traefik
+  --disable=servicelb
 

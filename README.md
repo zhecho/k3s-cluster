@@ -75,53 +75,6 @@ vim /mnt/ssd/etc/fstab
 ```
 ![change etc fstab](./images/06_change_etc_fsta_uuid.png)
 
-### TODO: recompile with va 48 bit for cilium && Disable Swap on armbian
-https://charmingwebdesign.com/raspberry-pi-kubernetes-cluster-with-cilium-cni/
-```bash
-# TODO make ansible role
-# install prerequisities 
-sudo apt-get install -y git make gcc libssl-dev bc flex bison \
-     libncurses5-dev libncursesw5-dev libelf-dev \
-     build-essential fakeroot libaudit-dev unzip
-
-# Linux sources 
-git clone --depth 1 https://github.com/armbian/build.git armbian
-cd armbian
-
-# Configure / compile armbian kernel
-./compile.sh build BOARD=orangepi5-plus BRANCH=edge BUILD_DESKTOP=no BUILD_MINIMAL=yes KERNEL_CONFIGURE=yes RELEASE=bookworm
-Set  Kernel Features → Memory model and change to 48-bit Virtual Address Space
-
-# debug 
-curl -sLO https://raw.githubusercontent.com/cilium/cilium/main/contrib/k8s/k8s-cilium-exec.sh
-chmod +x ./k8s-cilium-exec.sh
-
-# install helm on master
-curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
-sudo apt-get install apt-transport-https --yes
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-sudo apt-get update
-sudo apt-get install helm
-
-
-API_SERVER_IP=<YOUR API SERVER IP>
-# Kubeadm default is 6443
-API_SERVER_PORT=6443
-helm install cilium cilium/cilium –version 1.12.1 \
-–namespace kube-system \
-–set kubeProxyReplacement=strict \
-–set k8sServiceHost=${API_SERVER_IP} \
-–set k8sServicePort=${API_SERVER_PORT}
-
-
-# disable swap
-systemctl mask dev-zram1.swap
-vim /etc/default/armbian-zram-config
-# A few lines down the file, uncomment the line that says SWAP=false:
-reboot
-free -h
-```
-
 ### Check and Reboot 
 ![check and reboot](./images/07_check_fstabs_and_reboot.png)
 
@@ -237,6 +190,14 @@ ansible-playbook -i ansible/inventory/hosts.ini \
      --private-key=~/.ssh/id_rsa \
      -K \
      --limit="k3s-master-01"
+```
+
+## Optional helms
+### Metalb
+```bash
+kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)" secret/memberlist created
+helm repo add metallb https://metallb.github.io/metallb
+helm install metallb metallb/metallb
 ```
 
 ## TODOs
