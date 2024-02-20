@@ -193,12 +193,6 @@ ansible-playbook -i ansible/inventory/hosts.ini \
 ```
 
 ## Optional helms
-### Metalb
-```bash
-kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)" secret/memberlist created
-helm repo add metallb https://metallb.github.io/metallb
-helm install metallb metallb/metallb
-```
 
 ## TODOs
 Place for roadmap ideas/
@@ -216,3 +210,8 @@ WARNING: Make sure that disk is not wrong one!!
 # Executed in the local macOS for prepairng SD card 
 ansible-playbook ./ansible/playbooks/TODO_002_resize_nvme0n1p2.yml
 ```
+
+
+## Additional Cilium Config
+
+
