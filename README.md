@@ -1,12 +1,7 @@
 # **Create k3s cluster on OrangePi 5 plus devices with ansible** 
 
-Alpha version of Readme.md expains semi-automatic installation of k3s cluster.
-Semi-automatic because there are no playbooks for download, check image hash
-and dd it to the device. Those actions are described in "Manual actions".
-Readme contains some explanations and ansible cli commands that does initial
-config and automated k3s config with ansible. Docuememnt suppose that current
-management OS is macOS (i.e. ansible is installed on macOS). BSD/UNIX/Linux
-part is similar and documenatation will be updated in the future.
+Readme contains explanations of some ansible cli commands that does initial
+config and automated k3s config with ansible. 
 
 ## Manual actions
 
@@ -43,16 +38,10 @@ sudo dd if=Armbian-unofficial_24.5.0-trunk_Orangepi5-plus_bookworm_edge_6.8.0-rc
 Search for mac address of the device in your dhcp server and ssh
 root@<ip_address> to it with default password "1234" ![First
 
-login](./images/01_fist_login_script2.png)
-### List devices lsblk
-```bash
-lsblk
-```
-
+### Fdisk - remove existing tables (if existing) and create one for the install
+Check devices
 ![Check devices ](./images/02_check_devices.png)
-
-### Fdisk - remove existing tables (if there are existing) and create one for the install
-
+Run fdisk in order to delete/create partitions
 ![fdisk](./images/01_fdisk.png)
 ### Run armnbian-install and setup nvme0n1 as booting device
 Choose from the menu
@@ -73,7 +62,6 @@ with the correct IPs.
 ```ansible
 ansible-galaxy collection install -r collections/requirements.yml
 ```
-
 ### Copy pub keys
 Role "copy-ssh-pub-key" is not working as expected!!! it's commented out (you
 can use Copy ssh key from old playbooks blueprint)
