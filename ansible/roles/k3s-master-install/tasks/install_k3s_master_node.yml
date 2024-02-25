@@ -31,13 +31,40 @@
     - inventory_hostname in groups['k3sMaster']
     - k3s_config_content is defined
 
-- name: Replace 'localhost' with ansible_host IP in the k3s config
+- name: Load k3s_config_decoded into a dictionary
   set_fact:
-    modified_k3s_config: "{{ k3s_config_decoded | regex_replace('server: https://localhost:6443', 'server: https://' + ansible_host + ':6443') }}"
+    k3s_config_dict: "{{ k3s_config_decoded | from_yaml }}"
   when: 
     - inventory_hostname in groups['k3sMaster']
-    - k3s_config_content is defined
+    - k3s_config_decoded is defined
 
-# - name: Debug print the modified config (optional)
+- name: Replace server URL in the k3s config dictionary
+  set_fact:
+    k3s_config_dict_modified: >-
+      {{
+        k3s_config_dict | combine(
+          {
+            'server': 'https://' + ansible_host + ':6443'
+          },
+          recursive=True
+        )
+      }}
+  when: 
+    - k3s_config_decoded is defined
+
+- name: Convert modified k3s config back to YAML string
+  set_fact:
+    modified_k3s_config: "{{ k3s_config_dict_modified | to_yaml }}"
+  when:
+    - inventory_hostname in groups['k3sMaster']
+    - k3s_config_decoded is defined
+
+# - name: Debug print k3s_config_decoded 
+#   ansible.builtin.debug:
+#     var: k3s_config_decoded
+# 
+# - name: Debug print modified_k3s_config 
 #   ansible.builtin.debug:
 #     var: modified_k3s_config
+
+

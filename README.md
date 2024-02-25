@@ -99,6 +99,8 @@ On nodes:
  Deploy the modified k3s.yaml to all nodes
  Install k3s on worker nodes
 ```
+
+
 ```ansible
 ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa -vvvv
 
