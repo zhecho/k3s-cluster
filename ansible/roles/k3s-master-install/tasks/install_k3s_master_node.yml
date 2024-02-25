@@ -22,14 +22,21 @@
   ansible.builtin.slurp:
     src: /etc/rancher/k3s/k3s.yaml
   register: k3s_config_content
+  when: inventory_hostname in groups['k3sMaster']
 
 - name: Decode the k3s.yaml content
   set_fact:
     k3s_config_decoded: "{{ k3s_config_content['content'] | b64decode }}"
+  when: 
+    - inventory_hostname in groups['k3sMaster']
+    - k3s_config_content is defined
 
 - name: Replace 'localhost' with ansible_host IP in the k3s config
   set_fact:
     modified_k3s_config: "{{ k3s_config_decoded | regex_replace('server: https://localhost:6443', 'server: https://' + ansible_host + ':6443') }}"
+  when: 
+    - inventory_hostname in groups['k3sMaster']
+    - k3s_config_content is defined
 
 # - name: Debug print the modified config (optional)
 #   ansible.builtin.debug:

@@ -1,3 +1,4 @@
 # roles/your_role/defaults/main.yml
 local_user: defaultuser
 ssh_password: ssh_password
+local_ssh_public_key_path: "~/.ssh/id_rsa.pub"

@@ -69,15 +69,23 @@ can use Copy ssh key from old playbooks blueprint)
 ```ansible
 # Adding keys to cluster (expect to have key in ~/.ssh/id_rsa.pub)
 # NOTE: will ask you for user password two times (TODO: fix this)
+
 ansible-playbook -i inventory/hosts.ini k3s-ssh-copy-id.yml -e local_user=$USER -k
 
 # NOTE: For removing use (suppose that pub keys are ~/.ssh/*.pub )
 ansible-playbook -i inventory/hosts.ini k3s-ssh-remove-ssh-pub.yml -k
 ```
+
 ### Bootstrap
 ```ansible
 ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K
 ```
+
+### SSH config
+```ansible
+ansible-playbook -i inventory/hosts.ini k3s-sshd-hardened.yml -k --private-key=~/.ssh/id_rsa
+```
+
 ### Installation - runs the folloing tasks
 ```text
 On mater node: 
@@ -93,6 +101,7 @@ On nodes:
 ```
 ```ansible
 ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa -vvvv
+
 # ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa --limit="01.master.k3s"
 ```
 

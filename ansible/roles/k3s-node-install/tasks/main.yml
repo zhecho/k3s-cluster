@@ -1,21 +1,29 @@
 ---
-- name: Ensure the /etc/rancher/k3s directory exists
+# - name: Ensure the /etc/rancher/k3s directory exists
+#   become: yes 
+#   ansible.builtin.file:
+#     owner: root
+#     recurse: true
+#     path: /etc/rancher/k3s
+#     state: directory
+#     mode: '0755'
+- name: Create and set permissions on /etc/rancher/k3s directory using shell commands
   become: yes  # Use elevated permissions
-  ansible.builtin.file:
-    path: /etc/rancher/k3s
-    state: directory
-    mode: '0755'
-  when: 
-    - inventory_hostname in groups['k3sWorkers']
+  ansible.builtin.shell: |
+    mkdir -p /etc/rancher/k3s && \
+    chown root:root /etc/rancher/k3s && \
+    chmod 0755 /etc/rancher/k3s
+  args:
+    executable: /bin/bash
+  when: inventory_hostname in groups['k3sWorkers']
 
 - name: Deploy the modified k3s.yaml to all nodes
   become: yes
   ansible.builtin.copy:
     dest: /etc/rancher/k3s/k3s.yaml
     content: "{{ hostvars[groups['k3sMaster'][0]]['modified_k3s_config'] }}"
-    mode: '0644'
-  when: 
-    - inventory_hostname in groups['k3sWorkers']
+    mode: '0600'
+  when: inventory_hostname in groups['k3sWorkers']
 
 - name: Install k3s on worker nodes
   become: yes
