@@ -1,7 +1,17 @@
 # **Create k3s cluster on OrangePi 5 plus devices with ansible** 
 
-Readme contains explanations of some ansible cli commands that does initial
-config and automated k3s config with ansible. 
+Explanations about installing k3s cluster on Orange Pi 5 Plus devices with
+ansible. Process includes instalation of the following software:
+
+```text
+  On mater and worker nodes: 
+   K3s 
+   k9s
+   Helm 
+   Cilium with Helm
+   cilium-cli
+```
+
 
 ## Manual actions
 
@@ -36,20 +46,25 @@ sudo dd if=Armbian-unofficial_24.5.0-trunk_Orangepi5-plus_bookworm_edge_6.8.0-rc
 
 ### Insert and Boot with SD card
 Search for mac address of the device in your dhcp server and ssh
-root@<ip_address> to it with default password "1234" ![First
+root@<ip_address> to it with default password "1234" 
 
 ### Fdisk - remove existing tables (if existing) and create one for the install
 Check devices
 ![Check devices ](./images/02_check_devices.png)
 Run fdisk in order to delete/create partitions
 ![fdisk](./images/01_fdisk.png)
-### Run armnbian-install and setup nvme0n1 as booting device
+### Run armnbian-install and setup nvme0n1 as a booting device
 Choose from the menu
-![check and resize fs](./images/02_armbian_install.png)
-![check and resize fs](./images/03_armbian_install.png)
-![check and resize fs](./images/04_armbian_install.png)
-![check and resize fs](./images/05_armbian_install.png)
-![check and resize fs](./images/06_armbian_install.png)
+![armbian_install_2](./images/02_armbian_install.png)
+
+![armbian_install_3](./images/03_armbian_install.png)
+
+![armbian_install_4](./images/04_armbian_install.png)
+
+![armbian_install_5](./images/05_armbian_install.png)
+
+![armbian_install_6](./images/06_armbian_install.png)
+
 At the end it will ask you to poweroff. Do it remove SD card and you are done.
 
 # Configure DHCP for static records or just leave it dynamic
@@ -78,6 +93,11 @@ ansible-playbook -i inventory/hosts.ini k3s-ssh-remove-ssh-pub.yml -k
 
 ### Bootstrap
 ```ansible
+# Note: Before running bootstrap role you should change "mac_to_hostname" or just:
+# comment out role 
+#     - role: roles/set-hostname-by-mac-map
+# located in k3s-bootstrap.yml file 
+
 ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K
 ```
 
@@ -96,10 +116,9 @@ On mater node:
  Install cilium-cli
 On nodes:
  Ensure the /etc/rancher/k3s directory exists
- Deploy the modified k3s.yaml to all nodes
+ Modify and deploy the modified k3s.yaml to all nodes
  Install k3s on worker nodes
 ```
-
 
 ```ansible
 ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa -vvvv
@@ -107,94 +126,9 @@ ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/
 # ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa --limit="01.master.k3s"
 ```
 
-## Old playbooks
-### Copy ssh key 
-That step supposes that you have already generated ssh key (~/.ssh/id_rsa*). I'll execute this one only for one of the devices (--limit=<ip_address>)
-```ansible
-ansible-playbook -i inventory/hosts.ini playbooks/00_copy_ssh_pub_key.yml  -k --limit="02.worker.k3s"
-```
-
-If you notice an error about sshpass just install it:
-```bash
-brew install hudochenkov/sshpass/sshpass
-```
-### Setup hostnames
-Edit playbook mac addresses in order to specify hostnme for each device
-
-```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/00_set_hostname_by_mac_map.yml \
-     --private-key=~/.ssh/id_rsa \
-     -K \
-     --limit="192.168.1.2"
-```
-### Update/upgrade
-```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/01_update_upgrade.yml \
-     --private-key=~/.ssh/id_rsa \
-     -K \
-     --limit="k3s-master-01"
-```
-
-### Config SSH server and IPv6 ;))
-```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/02_sshd_config_hardened.yml \
-     --private-key=~/.ssh/id_rsa \
-     -K \
-     --limit="k3s-master-01"
-```
-```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/03_disable_ipv6.yml \
-     --private-key=~/.ssh/id_rsa \
-     -K \
-     --limit="k3s-master-01"
-```
-```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/04_disable_ipv6_nmcli.yml \
-     --private-key=~/.ssh/id_rsa \
-     -K \
-     --limit="k3s-master-01"
-```
-### Print Load and reboot
-```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/05_load_status.yml \
-     --private-key=~/.ssh/id_rsa \
-     -K \
-     --limit="k3s-master-01"
-```
-```ansible
-ansible-playbook -i ansible/inventory/hosts.ini \
-    ./ansible/playbooks/06_reboot.yml \
-     --private-key=~/.ssh/id_rsa \
-     -K \
-     --limit="k3s-master-01"
-```
-
 ## Optional helms
 
 ## TODOs
 Place for roadmap ideas/
 
-### Download armbian and check sha (localhost is osx TODO: for other osses) 
-```ansible
-# Executed in the local macOS to download and check image
-ansible-playbook ./ansible/playbooks/TODO_001_download_verify_image.yml
-```
-
-### Write image to sdcard
-This to be achiavable you need to set IMAGE_PATH and DISK_DEVICE.
-WARNING: Make sure that disk is not wrong one!!
-```ansible
-# Executed in the local macOS for prepairng SD card 
-ansible-playbook ./ansible/playbooks/TODO_002_resize_nvme0n1p2.yml
-```
-
-
 ## Additional Cilium Config
-
-
