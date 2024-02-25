@@ -9,6 +9,24 @@ management OS is macOS (i.e. ansible is installed on macOS). BSD/UNIX/Linux
 part is similar and documenatation will be updated in the future.
 
 ## Manual actions
+
+## Build Armbian for the OrangePI 5 Plus
+You can skip this step and download image from the nearest mirror or continue
+to building process with docker
+(documentation):[https://docs.armbian.com/Developer-Guide_Building-with-Docker/]
+```bash 
+# Run docker container with the following command
+./compile.sh docker-shell BOARD=orangepi5-plus \
+    BUILD_MINIMAL=yes BUILD_DESKTOP=no  \
+    KERNEL_CONFIGURE=no BRANCH=edge RELEASE=bookworm
+
+# Run build process inside the container
+./compile.sh BOARD=orangepi5-plus BUILD_MINIMAL=yes \
+    BUILD_DESKTOP=no  KERNEL_CONFIGURE=no BRANCH=edge \
+    RELEASE=bookworm EXTERNAL=yes DISABLE_IPV6=yes \
+    FORCE_BOOTSCRIPT_UPDATE=yes MAINLINE_MIRROR=google
+```
+
 ## Copy to sdcard (WARNING: doublecheck disk device name !!! )
 
 ```bash
@@ -17,67 +35,33 @@ part is similar and documenatation will be updated in the future.
 # fdisk etc.
 
 # create bootable sd card
-sudo dd if=Armbian_23.11.1_Orangepi5-plus_bookworm_edge_6.7.0-rc1_minimal.img \
+sudo dd if=Armbian-unofficial_24.5.0-trunk_Orangepi5-plus_bookworm_edge_6.8.0-rc1_minimal.img \
     of=/dev/disk2 bs=1m status=progress
 ```
 
 ### Insert and Boot with SD card
-![First login](./images/01_fist_login_script2.png)
+Search for mac address of the device in your dhcp server and ssh
+root@<ip_address> to it with default password "1234" ![First
+
+login](./images/01_fist_login_script2.png)
 ### List devices lsblk
 ```bash
 lsblk
 ```
+
 ![Check devices ](./images/02_check_devices.png)
 
-### On the device OrangePI 5 Plus DD from sd to nvme; Extend partition 2 (nvme0n1p2)
-```bash
-# WARNING: Ensure device name!!!
-# root
-sudo su -
-# NOTE: option bs=1M is different from osX one (bs=1m) if you use it. 
-dd if=/dev/mmcblk1 of=/dev/nvme0n1 bs=1M status=progress 
+### Fdisk - remove existing tables (if there are existing) and create one for the install
 
-# or do it via ssh with xzcat like:
-xzcat Armbian_23.11.1_Orangepi5-plus_jammy_edge_6.7.0-rc1.img.xz | ssh root@192.168.1.X 'dd of=/dev/nvme0n1 bs=1M status=progress'
-
-```
-![dd and resize](./images/03_dd_and_resizefs.png)
-### Check and resize fs 
-![check and resize fs](./images/04_resizefs.png)
-```bash
-or 
-
-parted /dev/nvme0n1
-print
-resizepart 2 100%
-
-e2fsck -f /dev/nvme0n1p2
-resize2fs /dev/nvme0n1p2
-```
-### Check out that UUIDs of sdcard and nvme are the same.
-```bash
-blkid
-```
-![list and generate uuid ](./images/05_generate_new_uuid_for_sdp1.png)
-### Change UUID 
-```bash
-tune2fs -O metadata_csum_seed -U random /dev/mmcblk1p2
-e2label /dev/nvme0n1p1 bootfs
-```
-After changing UUIDs you must chage it in /etc/fstab accordingly. 
-### Edit /etc/fstab in /dev/nvme0n1p1 (i.e. "/")
-```bash
-mkdir -p /tmp/ssd
-mount /dev/nvme0n1p2 /tmp/ssd
-
-# and correct UUIDs
-vim /mnt/ssd/etc/fstab
-```
-![change etc fstab](./images/06_change_etc_fsta_uuid.png)
-
-### Check and Reboot 
-![check and reboot](./images/07_check_fstabs_and_reboot.png)
-
+![fdisk](./images/01_fdisk.png)
+### Run armnbian-install and setup nvme0n1 as booting device
+Choose from the menu
+![check and resize fs](./images/02_armbian_install.png)
+![check and resize fs](./images/03_armbian_install.png)
+![check and resize fs](./images/04_armbian_install.png)
+![check and resize fs](./images/05_armbian_install.png)
+![check and resize fs](./images/06_armbian_install.png)
+At the end it will ask you to poweroff. Do it remove SD card and you are done.
 
 # Configure DHCP for static records or just leave it dynamic
 After installing all devices Put it in the netwrok to get IP via DHCP (you can
