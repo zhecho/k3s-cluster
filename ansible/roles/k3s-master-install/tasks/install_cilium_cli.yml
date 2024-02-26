@@ -9,6 +9,8 @@
 - name: Debug cilium_installed.rc
   debug:
     var: cilium_installed.rc
+  when:
+    - inventory_hostname in groups['k3sMaster']
 
 - name:  Install cilium client
   shell: |

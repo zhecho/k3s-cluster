@@ -45,14 +45,12 @@
 - name: Replace server URL in the k3s config dictionary
   set_fact:
     k3s_config_dict_modified: >-
-      {{
-        k3s_config_dict | combine(
-          {
-            'server': 'https://' + ansible_host + ':6443'
-          },
-          recursive=True
-        )
-      }}
+      {% for cluster in k3s_config_dict.clusters %}
+      {% if cluster.name == 'default' %}
+      {% set _ = cluster.cluster.update({'server': 'https://' + ansible_host + ':6443'}) %}
+      {% endif %}
+      {% endfor %}
+      {{ k3s_config_dict }}
   when: 
     - inventory_hostname in groups['k3sMaster']
     - k3s_config_decoded is defined
