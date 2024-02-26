@@ -12,6 +12,7 @@
   register: k3s_token_result
   when: inventory_hostname in groups['k3sMaster']
   run_once: true  # Ensures this command only runs once
+  when: inventory_hostname in groups['k3sMaster']
 
 - name: Set k3s token as fact
   set_fact:
@@ -23,6 +24,10 @@
     src: /etc/rancher/k3s/k3s.yaml
   register: k3s_config_content
   when: inventory_hostname in groups['k3sMaster']
+
+- name: Debug k3s_config_content 
+  ansible.builtin.debug:
+    var: k3s_config_content
 
 - name: Decode the k3s.yaml content
   set_fact:
@@ -50,6 +55,7 @@
         )
       }}
   when: 
+    - inventory_hostname in groups['k3sMaster']
     - k3s_config_decoded is defined
 
 - name: Convert modified k3s config back to YAML string
@@ -59,12 +65,12 @@
     - inventory_hostname in groups['k3sMaster']
     - k3s_config_decoded is defined
 
-# - name: Debug print k3s_config_decoded 
-#   ansible.builtin.debug:
-#     var: k3s_config_decoded
-# 
-# - name: Debug print modified_k3s_config 
-#   ansible.builtin.debug:
-#     var: modified_k3s_config
+- name: Debug print k3s_config_decoded 
+  ansible.builtin.debug:
+    var: k3s_config_decoded
+
+- name: Debug print modified_k3s_config 
+  ansible.builtin.debug:
+    var: modified_k3s_config
 
 

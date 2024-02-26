@@ -1,0 +1,30 @@
+---
+# Check if K3s server uninstall script exists
+- name: Check for K3s server uninstall script
+  stat:
+    path: /usr/local/bin/k3s-uninstall.sh
+  register: k3s_server_uninstall_script
+  when: inventory_hostname in groups['k3sMaster']
+
+# Uninstall K3s from master nodes
+- name: Uninstall K3s server
+  shell: /usr/local/bin/k3s-uninstall.sh
+  when:
+    - inventory_hostname in groups['k3sMaster']
+    - k3s_server_uninstall_script.stat.exists
+  become: yes
+
+# Check if K3s agent uninstall script exists
+- name: Check for K3s agent uninstall script
+  stat:
+    path: /usr/local/bin/k3s-agent-uninstall.sh
+  register: k3s_agent_uninstall_script
+  when: inventory_hostname in groups['k3sWorkers']
+
+# Uninstall K3s from worker nodes
+- name: Uninstall K3s agent
+  shell: /usr/local/bin/k3s-agent-uninstall.sh
+  when:
+    - inventory_hostname in groups['k3sWorkers']
+    - k3s_agent_uninstall_script.stat.exists
+  become: yes
