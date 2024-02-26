@@ -10,7 +10,6 @@
 - name: Get k3s token from master node
   shell: sudo cat /var/lib/rancher/k3s/server/node-token
   register: k3s_token_result
-  when: inventory_hostname in groups['k3sMaster']
   run_once: true  # Ensures this command only runs once
   when: inventory_hostname in groups['k3sMaster']
 
