@@ -5,7 +5,8 @@ metadata:
 spec:
   blocks:
   - start: "192.168.112.101"
-    stop: "192.168.112.121"
+    stop: "192.168.112.111"
   serviceSelector:
     matchExpressions:
       - {key: color, operator: In, values: [blue, cyan]}
+

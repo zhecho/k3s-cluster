@@ -24,6 +24,7 @@ to building process with docker
 # Clone armbian repo go to the repo root
 git clone https://github.com/armbian/build.git && cd build
 
+# NOTE: running docker desktop app needs to be in place
 # Run docker container with the following command
 ./compile.sh docker-shell BOARD=orangepi5-plus \
     BUILD_MINIMAL=yes BUILD_DESKTOP=no  \
@@ -147,12 +148,67 @@ k9s
 git  clone https://github.com/zhecho/k3s-cluster.git
 cd k3s-cluster/k8s-manifests/
 
-# Deploy Cilium 
+# Deploy Cilium lb pool
+kubectl apply -f lb
+
+# Open-webui on the master do
+git clone https://github.com/open-webui/open-webui.git
+
+# Install both Ollama and Open WebUI Using Helm
+cd open-webui && 
+helm package ./kubernetes/helm/
+helm install ollama-webui open-webui-*.tgz
+
 ```
 
-## Optional helms
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## TODOs
 Place for roadmap ideas/
 
-## Additional Cilium Config
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
