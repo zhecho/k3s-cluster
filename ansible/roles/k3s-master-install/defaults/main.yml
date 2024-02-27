@@ -1,6 +1,6 @@
 ---
 # defaults file for roles/k3s-master-install
-# cilium_version: "1.14.0"
+# NOTE: you can change it to --node-name={{ inventory_hostname }}
 cilium_helm_version: '1.15.0'
 INSTALL_K3S_EXEC_VARS: >-
   server
@@ -11,7 +11,7 @@ INSTALL_K3S_EXEC_VARS: >-
   --service-cidr={{ service_cidr }}
   --node-external-ip={{ ansible_host }}
   --node-ip={{ ansible_host }}
-  --node-name={{ inventory_hostname }}
+  --node-name={{ ansible_host }}
   --disable=traefik
   --disable=servicelb
 
