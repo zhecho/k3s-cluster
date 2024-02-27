@@ -4,12 +4,13 @@ Explanations about installing k3s cluster on Orange Pi 5 Plus devices with
 ansible. Process includes instalation of the following software:
 
 ```text
-  On mater and worker nodes: 
-   K3s 
-   k9s
-   Helm 
-   Cilium with Helm
-   cilium-cli
+  Basic Software packages: 
+	K3s
+    k9s
+    Helm 
+    Cilium with Helm
+    cilium-cli
+  Additional Software packages:
 ```
 
 
@@ -18,8 +19,11 @@ ansible. Process includes instalation of the following software:
 ## Build Armbian for the OrangePI 5 Plus
 You can skip this step and download image from the nearest mirror or continue
 to building process with docker
-(documentation):[https://docs.armbian.com/Developer-Guide_Building-with-Docker/]
-```bash 
+
+```bash
+# Clone armbian repo go to the repo root
+git clone https://github.com/armbian/build.git && cd build
+
 # Run docker container with the following command
 ./compile.sh docker-shell BOARD=orangepi5-plus \
     BUILD_MINIMAL=yes BUILD_DESKTOP=no  \
@@ -30,6 +34,8 @@ to building process with docker
     BUILD_DESKTOP=no  KERNEL_CONFIGURE=no BRANCH=edge \
     RELEASE=bookworm EXTERNAL=yes DISABLE_IPV6=yes \
     FORCE_BOOTSCRIPT_UPDATE=yes MAINLINE_MIRROR=google
+
+# for more information https://docs.armbian.com/Developer-Guide_Building-with-Docker/
 ```
 
 ## Copy to sdcard (WARNING: doublecheck disk device name !!! )
@@ -124,6 +130,24 @@ On nodes:
 ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa -vvvv
 
 # ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa --limit="01.master.k3s"
+```
+
+## Accessing cluster with ssh && k9s
+```bash
+# Login 
+ssh $USER@<k3s_master_ip> && sudo su -
+# Export env in order k9s to know config file
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+# Run k9s
+k9s
+```
+## Manifests
+```bash
+# Clone repo and go to k8s-mnifests
+git  clone https://github.com/zhecho/k3s-cluster.git
+cd k3s-cluster/k8s-manifests/
+
+# Deploy Cilium 
 ```
 
 ## Optional helms
