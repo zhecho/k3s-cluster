@@ -34,6 +34,12 @@
       k8sServiceHost: "{{ ansible_host }}"
       k8sServicePort: "{{ api_server_port }}"
       kubeConfigPath: "/etc/rancher/k3s/k3s.yaml"
+      devices: "en+"
+      l2announcements:
+        enabled: true
+        leaseDuration: "3s"
+        leaseRenewDeadline: "1s"
+        leaseRetryPeriod: "200ms"
   environment:
     KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
   when:

@@ -11,12 +11,14 @@ ansible. Process includes instalation of the following software:
     Cilium with Helm
     cilium-cli
   Additional Software packages:
+    For testing purposes installation of open-webui project is done.
+    modification of the helm chart are made because of the Cilium L2
+    annoncements mode
 ```
-
 
 ## Manual actions
 
-## Build Armbian for the OrangePI 5 Plus
+## Build Armbian for OrangePI 5 Plus devices
 You can skip this step and download image from the nearest mirror or continue
 to building process with docker
 
@@ -133,6 +135,59 @@ ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/
 # ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/id_rsa --limit="01.master.k3s"
 ```
 
+# Configure cilium to use L2 annoncements for local Lan and create example deployment of ollama-webui helm chart
+
+## Manifests
+
+## Reconfig cilium to use L2 Anoncement for local Lan
+This step is done via ansible helm installation of cilium 
+check out ./ansible/roles/k3s-master-install/tasks/install_cilium_with_helm.yml
+
+## RBAC needs to be in place in order cilium to have access to leases
+```bash
+# apply role, rolebinding to cilium service account that gives cilium accecss to "leases" resources
+kubectl apply -f ./k8s-manifests/cilium-rbac-for-l2-annoncement.yml 
+```
+
+## Deploy Cilium lb pools
+```bash
+kubectl apply -f k3s-cluster/mainfests/lb-red-pool.yml
+kubectl apply -f k3s-cluster/mainfests/lb-blue-pool.yml
+```
+
+## Inastall open-webui with helm  
+```bash
+# clone open-webui repo in ./k8s-manifests/
+cd k8s-manifests/ && git clone https://github.com/zhecho/open-webui.git
+cd open-webui/kubernetes/helm/
+
+# Explanations about Cilium L2 annoncement mode
+# Requirements: 
+#   - there should be ip pool that is assigned to the service - this is
+# achieved by setting label matching above pools (guarantied with color: blue
+# tag) 
+#
+#   - service should have: 
+#       spec.loadBalancerClass: io.cilium/l2-announcer
+#       spec.type: LoadBalancer
+
+
+# Test what should be deployed with helm template cli command:
+
+helm template ollama ./\
+    --set webui.service.labels.color="blue"\
+    --set webui.service.type="LoadBalancer"\
+    --set webui.service.loadBalancerClass="io.cilium/l2-announcer"
+
+# install it 
+helm install ollama ./\
+    --set webui.service.labels.color="blue"\
+    --set webui.service.type="LoadBalancer"\
+    --set webui.service.loadBalancerClass="io.cilium/l2-announcer"
+
+
+```
+
 ## Accessing cluster with ssh && k9s
 ```bash
 # Login 
@@ -142,34 +197,6 @@ export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 # Run k9s
 k9s
 ```
-## Manifests
-```bash
-# Clone repo and go to k8s-mnifests
-git  clone https://github.com/zhecho/k3s-cluster.git
-cd k3s-cluster/k8s-manifests/
-
-# Deploy Cilium lb pool
-kubectl apply -f lb
-
-# Open-webui on the master do
-git clone https://github.com/open-webui/open-webui.git
-
-# Install both Ollama and Open WebUI Using Helm
-cd open-webui && 
-helm package ./kubernetes/helm/
-helm install ollama-webui open-webui-*.tgz
-
-```
-
-
-
-
-
-
-
-
-
-
 
 
 
