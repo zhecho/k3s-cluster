@@ -14,5 +14,6 @@
       - tmux
       - vim
       - net-tools
+      - open-iscsi
     state: present
 
