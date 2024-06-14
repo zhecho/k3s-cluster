@@ -30,6 +30,8 @@
     chart_version: "{{ cilium_helm_version }}"
     release_namespace: kube-system
     values:
+      gatewayAPI:
+        enabled: true
       kubeProxyReplacement: true
       k8sServiceHost: "{{ ansible_host }}"
       k8sServicePort: "{{ api_server_port }}"

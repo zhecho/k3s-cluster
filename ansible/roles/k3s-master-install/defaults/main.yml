@@ -1,7 +1,7 @@
 ---
 # defaults file for roles/k3s-master-install
 # NOTE: you can change it to --node-name={{ inventory_hostname }}
-cilium_helm_version: '1.15.0'
+cilium_helm_version: '1.15.6'
 INSTALL_K3S_EXEC_VARS: >-
   server
   --flannel-backend=none
