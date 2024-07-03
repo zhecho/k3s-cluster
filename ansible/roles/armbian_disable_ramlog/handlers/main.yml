@@ -1,0 +1,7 @@
+---
+- name: Restart armbian-zram-config service
+  systemd:
+    name: armbian-zram-config
+    state: restarted
+    daemon_reload: yes
+  ignore_errors: yes

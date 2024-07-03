@@ -1,0 +1,48 @@
+---
+- name: Check if armbian-zram-config configuration file exists
+  stat:
+    path: "{{ armbian_zram_config_file }}"
+  register: zram_config
+
+- name: Disable armbian zram log
+  lineinfile:
+    path: "{{ armbian_zram_config_file }}"
+    regexp: '^ENABLED='
+    line: 'ENABLED=false'
+  when: zram_config.stat.exists
+  notify: Restart armbian-zram-config service
+
+- name: Ensure /var/log is not a symlink
+  file:
+    path: /var/log
+    state: directory
+    owner: root
+    group: adm
+    mode: '0755'
+
+- name: Move existing logs if /var/log was a symlink
+  shell: |
+    if [ -L /var/log ]; then
+      real_log_path=$(readlink -f /var/log)
+      mv $real_log_path/* /var/log/
+      rm -f /var/log
+      mkdir -p /var/log
+    fi
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Update logrotate configuration
+  replace:
+    path: /etc/logrotate.d/rsyslog
+    regexp: '/var/log\.hdd/'
+    replace: '/var/log/'
+
+- name: Ensure correct permissions on /var/log
+  file:
+    path: /var/log
+    state: directory
+    owner: root
+    group: adm
+    mode: '0755'
+    recurse: yes

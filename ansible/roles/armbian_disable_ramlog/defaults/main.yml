@@ -1,0 +1,2 @@
+---
+armbian_zram_config_file: /etc/default/armbian-zram-config

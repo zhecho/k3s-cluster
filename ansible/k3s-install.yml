@@ -11,6 +11,7 @@
 
   roles:
     - role: longhorn_storage_prep
+    - role: armbian_disable_ramlog 
     - role: k3s-master-install
     - role: k3s-node-install
     #- role: roles/set-hostname-by-mac-map
