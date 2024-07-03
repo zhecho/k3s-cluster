@@ -1,0 +1,14 @@
+---
+- name: Check if /storage/longhorn directory exists
+  stat:
+    path: "{{ longhorn_storage_path }}"
+  register: longhorn_dir
+
+- name: Create /storage/longhorn directory if it doesn't exist
+  file:
+    path: "{{ longhorn_storage_path }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  when: not longhorn_dir.stat.exists

@@ -10,6 +10,7 @@
     cilium_helm_version: "1.15.0"
 
   roles:
+    - role: longhorn_storage_prep
     - role: k3s-master-install
     - role: k3s-node-install
     #- role: roles/set-hostname-by-mac-map

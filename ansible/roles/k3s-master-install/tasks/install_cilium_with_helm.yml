@@ -42,6 +42,15 @@
         leaseDuration: "3s"
         leaseRenewDeadline: "1s"
         leaseRetryPeriod: "200ms"
+      externalIPs:
+        enabled: true
+      k8sClientRateLimit:
+        qps: 50
+        burst: 200
+      operator:
+        # replicas: 1  # Uncomment this if you only have one node
+        rollOutPods: true
+      rollOutCiliumPods: true
   environment:
     KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
   when:
