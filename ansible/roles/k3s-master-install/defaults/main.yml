@@ -2,6 +2,7 @@
 # defaults file for roles/k3s-master-install
 # NOTE: you can change it to --node-name={{ inventory_hostname }}
 cilium_helm_version: '1.15.6'
+cilium_gateway_api_ip: '192.168.112.115'
 INSTALL_K3S_EXEC_VARS: >-
   server
   --flannel-backend=none
@@ -11,7 +12,7 @@ INSTALL_K3S_EXEC_VARS: >-
   --service-cidr={{ service_cidr }}
   --node-external-ip={{ ansible_host }}
   --node-ip={{ ansible_host }}
-  --node-name={{ ansible_host }}
+  --node-name={{ inventory_hostname }}
   --disable=traefik
   --disable=servicelb
 

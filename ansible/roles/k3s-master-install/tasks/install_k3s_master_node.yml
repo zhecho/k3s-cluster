@@ -7,6 +7,27 @@
     - inventory_hostname in groups['k3sMaster']
     - "'k3s' not in services"
 
+- name: Add ExecStartPost to k3s service file
+  lineinfile:
+    path: /etc/systemd/system/k3s.service
+    line: "ExecStartPost=/bin/sh -c 'sed -i \"s/127.0.0.1/{{ ansible_host }}/\" /etc/rancher/k3s/k3s.yaml'"
+    insertafter: EOF
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
+- name: Restart k3s service
+  systemd:
+    name: k3s
+    state: restarted
+  when:
+    - inventory_hostname in groups['k3sMaster']
+
 - name: Get k3s token from master node
   shell: sudo cat /var/lib/rancher/k3s/server/node-token
   register: k3s_token_result

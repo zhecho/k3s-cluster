@@ -7,13 +7,15 @@
   vars:
     cluster_cidr: "10.42.0.0/24"
     service_cidr: "10.43.0.0/24"
-    cilium_helm_version: "1.15.0"
+    cilium_helm_version: "1.15.6"
 
   roles:
+    - role: remove-k3s
     - role: longhorn_storage_prep
     - role: armbian_disable_ramlog 
     - role: k3s-master-install
     - role: k3s-node-install
+    - role: reboot
     #- role: roles/set-hostname-by-mac-map
       #- role: k3s-kubeconfig-setup
 

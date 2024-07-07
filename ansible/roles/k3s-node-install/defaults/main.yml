@@ -1,4 +1,4 @@
-cilium_helm_version: '1.15.0'
+cilium_helm_version: '1.15.6'
 INSTALL_K3S_EXEC_VARS: >-
  agent
   --server=https://{{ hostvars[groups['k3sMaster'][0]]['ansible_host'] }}:6443
