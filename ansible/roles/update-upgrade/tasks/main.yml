@@ -9,11 +9,11 @@
     name:
       - apt-transport-https
       - ca-certificates
+      - open-iscsi
       - curl
       - software-properties-common
       - tmux
       - vim
       - net-tools
-      - open-iscsi
     state: present
 
