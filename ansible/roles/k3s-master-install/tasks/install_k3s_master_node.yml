@@ -10,10 +10,10 @@
 - name: Add ExecStartPost to k3s service file
   lineinfile:
     path: /etc/systemd/system/k3s.service
-    line: "ExecStartPost=/bin/sh -c 'sed -i \"s/127.0.0.1/{{ ansible_host }}/\" /etc/rancher/k3s/k3s.yaml'"
+    line: "ExecStartPost=/bin/sh -c 'sed -i \"s/127.0.0.1/{{ k3s_api_host }}/\" /etc/rancher/k3s/k3s.yaml'"
     insertafter: EOF
   when:
-    - inventory_hostname in groups['k3sMaster']
+  - inventory_hostname in groups['k3sMaster']
 
 - name: Reload systemd daemon
   systemd:

@@ -37,9 +37,6 @@
     chart_version: "{{ cilium_helm_version }}"
     release_namespace: kube-system
     values:
-      infrastructure:
-        annotations:
-          io.cilium/lb-ipam-ips: "{{ cilium_gateway_api_ip }}"
       enableCiliumEndpointSlice: true
       gatewayAPI:
         enabled: true

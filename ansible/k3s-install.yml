@@ -7,7 +7,7 @@
   vars:
     cluster_cidr: "10.42.0.0/24"
     service_cidr: "10.43.0.0/24"
-    cilium_helm_version: "1.15.6"
+    cilium_helm_version: "1.16.5"
 
   roles:
     - role: remove-k3s

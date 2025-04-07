@@ -1,5 +1,5 @@
 ---
-- name: Bootstrap config for k3s cluster 
+- name: Bootstrap config for k3s cluster
   become: true
   hosts: 'k3sCluster'
   gather_facts: yes
@@ -7,7 +7,7 @@
   vars:
     mac_to_hostname:
       'c0:74:2b:ff:12:f2': 'master-01'
-      'c0:74:2b:ff:0e:65': 'worker-01'
+      'c0:74:2b:ff:0e:65': 'master-02'
       'c0:74:2b:ff:12:da': 'worker-02'
 
   roles:
