@@ -1,117 +1,8 @@
 # **Create k3s cluster on OrangePi 5 plus devices with ansible**
 
-Explanations about installing k3s cluster on Orange Pi 5 Plus devices with
-ansible. Process includes instalation of the following software:
+Older Docs before tag v1.0.3
 
-```text
-  Basic Software packages:
-    K3s
-    k9s
-    Helm
-    Cilium with Helm
-    cilium-cli
-  Additional Software packages:
-    For testing purposes installation of open-webui project is done.
-    modification of the helm chart are made because of the Cilium L2
-    annoncements mode
 ```
-
-## Manual actions
-
-## Build Armbian for OrangePI 5 Plus devices
-You can skip this step and download image from the nearest mirror or continue
-to building process with docker
-
-```bash
-# Clone armbian repo go to the repo root
-git clone https://github.com/armbian/build.git && cd build
-
-# NOTE: running docker desktop app needs to be in place
-# Run docker container with the following command
-./compile.sh docker-shell BOARD=orangepi5-plus \
-    BUILD_MINIMAL=yes BUILD_DESKTOP=no  \
-    KERNEL_CONFIGURE=no BRANCH=edge RELEASE=bookworm
-
-# Run build process IN the container
-./compile.sh BOARD=orangepi5-plus BUILD_MINIMAL=yes \
-    BUILD_DESKTOP=no  KERNEL_CONFIGURE=no BRANCH=edge \
-    RELEASE=bookworm EXTERNAL=yes DISABLE_IPV6=yes \
-    FORCE_BOOTSCRIPT_UPDATE=yes MAINLINE_MIRROR=google
-
-# for more information https://docs.armbian.com/Developer-Guide_Building-with-Docker/
-```
-
-## Copy to sdcard (WARNING: doublecheck disk device name !!! )
-
-```bash
-# on osX check out the disk name with diskutil list command
-# on linux/bsd/unix you can use lsblk or parted or gsdisk or other like cdisk
-# fdisk etc.
-
-# from the same folder create bootable sd card
-sudo dd if=output/images/Armbian-unofficial_24.5.0-trunk_Orangepi5-plus_bookworm_edge_6.8.0-rc1_minimal.img \
-    of=/dev/disk2 bs=1m status=progress
-```
-
-### Insert and Boot with SD card
-Search for mac address of the device in your dhcp server and ssh
-root@<ip_address> to it with default password "1234"
-
-### Fdisk - remove existing tables (if existing) and create one for the install
-Check devices
-![Check devices ](./images/02_check_devices.png)
-Run fdisk in order to delete/create partitions
-![fdisk](./images/01_fdisk.png)
-### Run armnbian-install and setup nvme0n1 as a booting device
-Choose from the menu
-![armbian_install_2](./images/02_armbian_install.png)
-
-![armbian_install_3](./images/03_armbian_install.png)
-
-![armbian_install_4](./images/04_armbian_install.png)
-
-![armbian_install_5](./images/05_armbian_install.png)
-
-![armbian_install_6](./images/06_armbian_install.png)
-
-At the end it will ask you to poweroff. Do it remove SD card and you are done.
-
-
-### Actions for broken edge images...
-Sometimes armbian-install does not work as expected. and the following actions
-should fix such behaviour. After installing and rebooting, system does not boot
-from nvme device. Put sd card back and reboot:
-
-```bash
-# before mouting you should check partitions in gpt
-fdisk /dev/nvme0n1
-p1 - type 136 -> Linux exteded boot
-p2 - type 20  -> Linux filesystem
-
-# mount installation partition
-mount /dev/nvme0n1p1 /mnt/nvme0n1
-mount /dev/nvme0n1p2 /mnt/nvme0n2
-
-# get UUID of the partition (/dev/nvme0n2) in which is supposed that you
-# installed armbian earlier.
-/sbin/blkid |grep nvme0n1p2 | cut -d " " -f2
-
-# make sure that you have boot folder in nvme0n1p1
-cp -r /boot/* /mnt/nvme0n1p1/.
-
-# edit armbianEnv.txt and chage boot UUID with the above
-vim /mnt/nvme0n1p1/armbianEnv.txt
-
-# poweroff & remove sdcard
-poweroff
-
-# boot and check root device
-
-# Sometimes
-# NOTE: manual overwrite mtdblock0 (don't do it)
-# dd if=/usr/lib/linux-u-boot-edge-orangepi5-plus/rkspi_loader.img of=/dev/mtdblock0 conv=notrunc status=none
-```
-
 # Configure DHCP for static records or just leave it dynamic
 After installing all devices Put it in the netwrok to get IP via DHCP (you can
 do it with static records in it) and get ./ansible/inventory/hosts.ini update
@@ -153,7 +44,7 @@ ansible-playbook -i inventory/hosts.ini k3s-sshd-hardened.yml -K
 
 ### Installation - runs the folloing tasks
 ```text
-On mater node:
+On mater nodes:
  Install K3s Master node
  Install k9s on master node
  Install Helm
