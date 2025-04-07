@@ -1,4 +1,9 @@
 ---
+- name: Ensure NetworkManager is installed
+  apt:
+    name: network-manager
+    state: present
+
 - name: Get list of network connections
   command: nmcli -t -f UUID,TYPE,DEVICE con show
   register: nmcli_con_show

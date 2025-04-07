@@ -1,13 +1,13 @@
-# **Create k3s cluster on OrangePi 5 plus devices with ansible** 
+# **Create k3s cluster on OrangePi 5 plus devices with ansible**
 
 Explanations about installing k3s cluster on Orange Pi 5 Plus devices with
 ansible. Process includes instalation of the following software:
 
 ```text
-  Basic Software packages: 
+  Basic Software packages:
     K3s
     k9s
-    Helm 
+    Helm
     Cilium with Helm
     cilium-cli
   Additional Software packages:
@@ -44,7 +44,7 @@ git clone https://github.com/armbian/build.git && cd build
 ## Copy to sdcard (WARNING: doublecheck disk device name !!! )
 
 ```bash
-# on osX check out the disk name with diskutil list command 
+# on osX check out the disk name with diskutil list command
 # on linux/bsd/unix you can use lsblk or parted or gsdisk or other like cdisk
 # fdisk etc.
 
@@ -55,7 +55,7 @@ sudo dd if=output/images/Armbian-unofficial_24.5.0-trunk_Orangepi5-plus_bookworm
 
 ### Insert and Boot with SD card
 Search for mac address of the device in your dhcp server and ssh
-root@<ip_address> to it with default password "1234" 
+root@<ip_address> to it with default password "1234"
 
 ### Fdisk - remove existing tables (if existing) and create one for the install
 Check devices
@@ -80,9 +80,9 @@ At the end it will ask you to poweroff. Do it remove SD card and you are done.
 ### Actions for broken edge images...
 Sometimes armbian-install does not work as expected. and the following actions
 should fix such behaviour. After installing and rebooting, system does not boot
-from nvme device. Put sd card back and reboot: 
+from nvme device. Put sd card back and reboot:
 
-```bash 
+```bash
 # before mouting you should check partitions in gpt
 fdisk /dev/nvme0n1
 p1 - type 136 -> Linux exteded boot
@@ -93,7 +93,7 @@ mount /dev/nvme0n1p1 /mnt/nvme0n1
 mount /dev/nvme0n1p2 /mnt/nvme0n2
 
 # get UUID of the partition (/dev/nvme0n2) in which is supposed that you
-# installed armbian earlier. 
+# installed armbian earlier.
 /sbin/blkid |grep nvme0n1p2 | cut -d " " -f2
 
 # make sure that you have boot folder in nvme0n1p1
@@ -115,7 +115,7 @@ poweroff
 # Configure DHCP for static records or just leave it dynamic
 After installing all devices Put it in the netwrok to get IP via DHCP (you can
 do it with static records in it) and get ./ansible/inventory/hosts.ini update
-with the correct IPs.   
+with the correct IPs.
 
 # Running Ansible Playbooks for basic config
 ### Installing ansible requirements
@@ -139,9 +139,9 @@ ansible-playbook -i inventory/hosts.ini k3s-ssh-remove-ssh-pub.yml -k
 ### Bootstrap
 ```ansible
 # Note: Before running bootstrap role you should change "mac_to_hostname" or just:
-# comment out role 
+# comment out role
 #     - role: roles/set-hostname-by-mac-map
-# located in k3s-bootstrap.yml file 
+# located in k3s-bootstrap.yml file
 
 ansible-playbook -i inventory/hosts.ini k3s-bootstrap.yml -K
 ```
@@ -153,10 +153,10 @@ ansible-playbook -i inventory/hosts.ini k3s-sshd-hardened.yml -K
 
 ### Installation - runs the folloing tasks
 ```text
-On mater node: 
+On mater node:
  Install K3s Master node
  Install k9s on master node
- Install Helm 
+ Install Helm
  Install Cilium with Helm
  Install cilium-cli
 On nodes:
@@ -167,8 +167,8 @@ On nodes:
 
 ```ansible
 # NOTE: if you reinstall node - use the below command with limit option to only
-master and reinstalled node that way you don't have to wait other nodes 
-   ex:  --limit="02.worker.k3s","01.master.k3s" 
+master and reinstalled node that way you don't have to wait other nodes
+   ex:  --limit="02.worker.k3s","01.master.k3s"
 
 TODO: Ansible to be chnged for getting k3s token from master on reinstall worker nodes..
 ```
@@ -185,13 +185,13 @@ ansible-playbook -i inventory/hosts.ini k3s-install.yml -K --private-key=~/.ssh/
 ## Manifests
 
 ## Reconfig cilium to use L2 Anoncement for local Lan
-This step is done via ansible helm installation of cilium 
+This step is done via ansible helm installation of cilium
 check out ./ansible/roles/k3s-master-install/tasks/install_cilium_with_helm.yml
 
 ## RBAC needs to be in place in order cilium to have access to leases
 ```bash
 # apply role, rolebinding to cilium service account that gives cilium accecss to "leases" resources
-kubectl apply -f ./k8s-manifests/cilium-rbac-for-l2-annoncement.yml 
+kubectl apply -f ./k8s-manifests/cilium-rbac-for-l2-annoncement.yml
 ```
 
 ## Deploy Cilium lb pools
@@ -200,15 +200,15 @@ kubectl apply -f k3s-cluster/mainfests/lb-red-pool.yml
 kubectl apply -f k3s-cluster/mainfests/lb-blue-pool.yml
 ```
 
-## Inastall helm charts (cert-manger, open-webui, argo .. etc.) 
+## Inastall helm charts (cert-manger, open-webui, argo .. etc.)
 TODOs
 ### Inastall argo
 ```text
- - Config argo to look after git repo 
+ - Config argo to look after git repo
  - Inastall cert-manager - Let's encrypt with cert-manager
  - Install prometheus operator with helm
  - export snmp_exporter for network devices
- - 
+ -
 ```
 
 ### Inastall open-webui
@@ -218,12 +218,12 @@ cd k8s-manifests/ && git clone https://github.com/zhecho/open-webui.git
 cd open-webui/kubernetes/helm/
 
 # Cilium L2 annoncement mode
-# Requirements: 
+# Requirements:
 #   - there should be ip pool that is assigned to the service - this is
 # achieved by setting label matching above pools (guarantied with color: blue
-# tag) 
+# tag)
 #
-#   - service should have: 
+#   - service should have:
 #       spec.loadBalancerClass: io.cilium/l2-announcer
 #       spec.type: LoadBalancer
 
@@ -247,7 +247,7 @@ helm install ollama -n ollama ./\
 ```
 ## Accessing cluster with ssh && k9s
 ```bash
-# Login 
+# Login
 ssh $USER@<k3s_master_ip> && sudo su -
 # Export env in order k9s to know config file
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
