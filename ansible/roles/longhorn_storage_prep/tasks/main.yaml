@@ -8,7 +8,7 @@
   file:
     path: "{{ longhorn_storage_path }}"
     state: directory
-    mode: '0755'
+    mode: '0700'
     owner: root
     group: root
   when: not longhorn_dir.stat.exists
