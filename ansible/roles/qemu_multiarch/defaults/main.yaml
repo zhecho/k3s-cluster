@@ -1,0 +1,9 @@
+---
+# QEMU Multi-Architecture Support Role Defaults
+# This role enables ARM64 hosts to build and run AMD64 (x86_64) container images
+
+# Enable verbose output
+qemu_verbose: true
+
+# Validate installation after setup
+qemu_validate: true

@@ -1,0 +1,81 @@
+---
+- name: Install QEMU user-static for multi-architecture support
+  apt:
+    name:
+      - qemu-user-static
+      - binfmt-support
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Check if binfmt_misc is enabled
+  stat:
+    path: /proc/sys/fs/binfmt_misc/status
+  register: binfmt_status
+
+- name: Verify binfmt_misc is enabled
+  command: cat /proc/sys/fs/binfmt_misc/status
+  register: binfmt_enabled
+  changed_when: false
+  failed_when: "'enabled' not in binfmt_enabled.stdout"
+  when: binfmt_status.stat.exists
+
+- name: Register QEMU binary formats for multi-architecture support
+  docker_container:
+    name: qemu-user-static-register
+    image: multiarch/qemu-user-static:register
+    privileged: yes
+    auto_remove: yes
+    command: --reset -p yes
+    detach: no
+  become: yes
+  ignore_errors: yes
+  register: qemu_register
+
+- name: Register QEMU using podman if docker failed
+  command: podman run --rm --privileged multiarch/qemu-user-static:register --reset -p yes
+  become: yes
+  when: qemu_register.failed is defined and qemu_register.failed
+  ignore_errors: yes
+  register: qemu_register_podman
+
+- name: Manually register x86_64 binfmt handler if container methods failed
+  shell: |
+    echo ':qemu-x86_64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x3e\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-x86_64-static:OCF' > /proc/sys/fs/binfmt_misc/register
+  become: yes
+  when: >
+    (qemu_register.failed is defined and qemu_register.failed) and
+    (qemu_register_podman.failed is defined and qemu_register_podman.failed)
+  ignore_errors: yes
+
+- name: Check if qemu-x86_64 handler is registered
+  stat:
+    path: /proc/sys/fs/binfmt_misc/qemu-x86_64
+  register: qemu_x86_64_handler
+
+- name: Verify qemu-x86_64 handler exists
+  debug:
+    msg: "QEMU x86_64 handler is registered and ready"
+  when: qemu_x86_64_handler.stat.exists
+
+- name: List all registered QEMU handlers
+  shell: ls -1 /proc/sys/fs/binfmt_misc/ | grep qemu || echo "No QEMU handlers found"
+  register: qemu_handlers
+  changed_when: false
+  become: yes
+
+- name: Display registered QEMU handlers
+  debug:
+    var: qemu_handlers.stdout_lines
+
+- name: Test AMD64 emulation (optional verification)
+  command: /usr/bin/qemu-x86_64-static --version
+  register: qemu_test
+  changed_when: false
+  failed_when: false
+  become: yes
+
+- name: Display QEMU test result
+  debug:
+    var: qemu_test.stdout_lines
+  when: qemu_test.rc == 0

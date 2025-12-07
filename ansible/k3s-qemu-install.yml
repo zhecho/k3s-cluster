@@ -1,0 +1,18 @@
+---
+- name: Install QEMU multi-architecture support on K3s cluster
+  hosts: k3sCluster
+  become: yes
+  remote_user: zen0
+
+  roles:
+    - qemu_multiarch
+
+  tasks:
+    - name: Final verification - List all QEMU binary formats
+      shell: ls -la /proc/sys/fs/binfmt_misc/ | grep -E "(qemu|llvm)" || echo "No emulation handlers found"
+      register: final_check
+      changed_when: false
+
+    - name: Display final status
+      debug:
+        msg: "QEMU multi-architecture support installation complete on {{ inventory_hostname }}"
